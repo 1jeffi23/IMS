@@ -6,7 +6,6 @@ import { sendEmail } from "./email.js";
 
 
 export const auth = betterAuth({
-  // baseURL: "http://localhost:3000",
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -42,14 +41,14 @@ export const auth = betterAuth({
       });
     },
 
-    // onExistingUserSignUp: async ({ user }, request) => {
-    //   await sendEmail({
-    //     to: user.email,
-    //     subject: "Sign-up attempt with your email",
-    //     text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
-    //   });
-    // },
+    onExistingUserSignUp: async ({ user }, request) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Sign-up attempt with your email",
+        text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
+      });
+    },
 
-    // sendOnSignIn: true,
+    sendOnSignIn: true,
   },
 });

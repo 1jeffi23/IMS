@@ -6,168 +6,168 @@ import { Button } from "../ui/button";
 import api from "../../lib/axios";
 
 const Signup = () => {
- 
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
 
-  const onSubmit = async(data) => {
-      console.log("data",data);
-    try {
-        const response = await api.post("/api/auth/sign-up/email",{
-            name:data.name,
-            email:data.email.trim().toLowerCase(),
-            password:data.password,
-            //  callbackURL: "http://localhost:5173/login",
-        });
-        
-         console.log("SUCCESS STATUS:", response.status);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+    } = useForm();
 
-         toast.success("Verification email sent!");
-      
-        reset();
-        
-    } catch (error) {
-          console.log("FULL ERROR:", error);
-       const message =
-    error.response?.data?.message ||
-    error.response?.data?.error?.message ||
-    "Something went wrong";
+    const onSubmit = async (data) => {
+        console.log("data", data);
+        try {
+            const response = await api.post("/api/auth/sign-up/email", {
+                name: data.name,
+                email: data.email.trim().toLowerCase(),
+                password: data.password,
+                callbackURL: "http://localhost:5173/login",
+            });
 
-  toast.error(message);
-    }
-  };
+            console.log("SUCCESS STATUS:", response.status);
 
-  return (
-    /* Outer Container: Forced Fixed Theme (Light Mode Lock) */
-    <div className="min-h-screen  bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
+            toast.success("Verification email sent!");
 
-      {/* Right Side Form Container */}
-      <div className="lg:col-span-3 flex items-center justify-center bg-white px-8 py-10 sm:px-10 lg:px-16">
-        <div className="w-full max-w-lg">
-          
-          {/* Header */}
-          <div className="mb-8">
-            <h2 className="text-center text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-              Create your account
-            </h2>
+            reset();
 
-            {/* <p className="mt-3 text-center text-base sm:text-lg text-slate-500">
+        } catch (error) {
+            //   console.log("FULL ERROR:", error);
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.error?.message ||
+                "Something went wrong";
+
+            toast.error(message);
+        }
+    };
+
+    return (
+        /* Outer Container: Forced Fixed Theme (Light Mode Lock) */
+        <div className="min-h-screen  bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
+
+            {/* Right Side Form Container */}
+            <div className="lg:col-span-3 flex items-center justify-center bg-white px-8 py-10 sm:px-10 lg:px-16">
+                <div className="w-full max-w-lg">
+
+                    {/* Header */}
+                    <div className="mb-8">
+                        <h2 className="text-center text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+                            Create your account
+                        </h2>
+
+                        {/* <p className="mt-3 text-center text-base sm:text-lg text-slate-500">
               Join our community and start sharing your ideas
             </p> */}
-          </div>
+                    </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            
-            {/* Full Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Full Name
-              </label>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                {...register("name", {
-                  required: "Name is required",
-                  minLength: {
-                    value: 3,
-                    message: "Minimum 3 characters",
-                  },
-                })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.name.message}
-                </p>
-              )}
+                        {/* Full Name */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                placeholder="Enter your full name"
+                                {...register("name", {
+                                    required: "Name is required",
+                                    minLength: {
+                                        value: 3,
+                                        message: "Minimum 3 characters",
+                                    },
+                                })}
+                                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
+                            />
+                            {errors.name && (
+                                <p className="mt-1 text-sm text-rose-600">
+                                    {errors.name.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Email Address */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                {...register("email", {
+                                    required: "Email is required",
+                                    pattern: {
+                                        value: /^\S+@\S+\.\S+$/,
+                                        message: "Invalid email",
+                                    },
+                                })}
+                                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
+                            />
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-rose-600">
+                                    {errors.email.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                placeholder="Create a password"
+                                {...register("password", {
+                                    required: "Password is required",
+                                    minLength: {
+                                        value: 6,
+                                        message: "Minimum 6 characters",
+                                    },
+                                    pattern: {
+                                        value: /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
+                                        message:
+                                            "Password must contain at least one letter and one number",
+                                    },
+                                })}
+                                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
+                            />
+                            {errors.password && (
+                                <p className="mt-1 text-sm text-rose-600">
+                                    {errors.password.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Submit Button */}
+                        <Button
+                            type="submit"
+                            className="h-14 w-full rounded-xl bg-[#6D28D9] text-lg font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
+                        >
+                            Create Account
+                        </Button>
+
+                        {/* Bottom Navigation Link */}
+                        <p className="text-center text-sm text-slate-500">
+                            Already have an account?{" "}
+                            <Link
+                                to="/login"
+                                className="font-semibold text-[#6D28D9] hover:text-[#5B21B6] transition"
+                            >
+                                Login
+                            </Link>
+                        </p>
+                    </form>
+
+                </div>
             </div>
-
-            {/* Email Address */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Email Address
-              </label>
-
-              <input
-                type="email"
-                placeholder="Enter your email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+\.\S+$/,
-                    message: "Invalid email",
-                  },
-                })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-
-              <input
-                type="password"
-                placeholder="Create a password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Minimum 6 characters",
-                  },
-                  pattern: {
-                    value: /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
-                    message:
-                      "Password must contain at least one letter and one number",
-                  },
-                })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base text-slate-900 placeholder:text-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="h-14 w-full rounded-xl bg-[#6D28D9] text-lg font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
-            >
-              Create Account
-            </Button>
-
-            {/* Bottom Navigation Link */}
-            <p className="text-center text-sm text-slate-500">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-semibold text-[#6D28D9] hover:text-[#5B21B6] transition"
-              >
-                Login
-              </Link>
-            </p>
-          </form>
-
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Signup;
