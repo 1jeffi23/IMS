@@ -7,4 +7,4 @@ dotenv.config({ path: "./config/.env" });
 
 const sql = neon(process.env.DB_URL);
 
-export const db = drizzle(sql);    //created neon plus drizzle connection
+export const db = drizzle(sql);    //created neon nd drizzle connection
