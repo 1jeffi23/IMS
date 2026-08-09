@@ -1,9 +1,11 @@
 import express from 'express';
+import cors from 'cors';
 import { toNodeHandler } from "better-auth/node";  //Adapter/Bridge that makes Better Auth work with Node.js-style HTTP servers.
 //toNodeHandler connects Better Auth with Express/Node.js request-response system.
 import { auth } from "./src/user/auth/auth.js";
 import { authRoute } from './src/user/auth/authRoute.js';
 const app = express();
+app.use(cors());
 
 //authroute
 app.all("/api/auth/*splat", authRoute);

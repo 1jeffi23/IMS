@@ -6,16 +6,18 @@ import { sendEmail } from "./email.js";
 
 
 export const auth = betterAuth({
-  baseURL: "http://localhost:3000",
+  // baseURL: "http://localhost:3000",
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
   }),
 
+  trustedOrigins: ["http://localhost:5173"],
+
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-//currently working on restpass
+
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendEmail({
         to: user.email,
@@ -31,8 +33,8 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendOnSignUp: true,
-
-    sendVerificationEmail: async ({ user, url }) => {
+    
+    sendVerificationEmail: async ({ user, url }) => {  
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
@@ -40,14 +42,14 @@ export const auth = betterAuth({
       });
     },
 
-    onExistingUserSignUp: async ({ user }, request) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Sign-up attempt with your email",
-        text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
-      });
-    },
+    // onExistingUserSignUp: async ({ user }, request) => {
+    //   await sendEmail({
+    //     to: user.email,
+    //     subject: "Sign-up attempt with your email",
+    //     text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
+    //   });
+    // },
 
-    sendOnSignIn: true,
+    // sendOnSignIn: true,
   },
 });
