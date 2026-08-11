@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import api from "@/lib/axios";
+import { authClient } from "@/lib/auth-client";
+
 
 const Login = () => {
   const navigate = useNavigate();
-
 
   const {
     register,
@@ -16,31 +16,45 @@ const Login = () => {
     reset,
   } = useForm();
 
-  const submit = async(data) => {
-   try {
-    const response = await api.post('/api/auth/sign-in/email',{
-    email: data.email.trim().toLowerCase(),
-    password: data.password,
-   })
+  // Email / Password Login
+  const submit = async (data) => {
+    const { data: result, error } = await authClient.signIn.email({
+      email: data.email.trim().toLowerCase(),
+      password: data.password,
+    });
 
-   toast.success("Login Successfull!");
-   reset();
-   navigate("/");
-    
-   } catch (error) {
-   toast.error(
-    error.response?.data?.message || "Login failed"
-   )
-   }
+    if (error) {
+      toast.error(error.message || "Login failed");
+      return;
+    }
 
-   
+    toast.success("Login Successful!");
+    reset();
+    navigate("/");
   };
+
+  // GitHub Login
+  const LoginWithGithub = async () => {
+    console.log("button clicked")
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: "/",
+    });
+  };
+
+  // // Google Login
+  // const LoginWithGoogle = async () => {
+  //   await authClient.signIn.social({
+  //     provider: "google",
+  //     callbackURL: "/",
+  //   });
+  // };
 
   return (
     /* Main Wrapper: Fixed theme styling added (light mode appearance forced) */
     <div className="min-h-screen  bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
       
-      
+     
 
       {/* Right Side - Form Container */}
       <div className="lg:col-span-3 flex items-center justify-center bg-white px-6 py-10 sm:px-8 lg:px-12">
@@ -138,12 +152,16 @@ const Login = () => {
             <p className="text-center text-sm text-slate-500">
               Don't have an account?{" "}
               <Link
-                to="/"
+                to="/signup"
                 className="font-semibold text-[#6D28D9] hover:text-[#5B21B6] transition"
               >
                 Sign Up
               </Link>
             </p>
+            <h4 className="text-center text-sm text-slate-500">_______________OR________________</h4>
+            <button onClick={LoginWithGithub}
+             className="h-12 w-full bg-[#6D28D9] text-base font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
+            >Login With Github</button>
           </form>
         </div>
       </div>

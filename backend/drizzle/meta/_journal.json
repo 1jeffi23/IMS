@@ -8,6 +8,41 @@
       "when": 1786183381156,
       "tag": "0000_warm_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786284121876,
+      "tag": "0001_smooth_starjammers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786439180869,
+      "tag": "0002_smiling_crystal",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786446222697,
+      "tag": "0003_futuristic_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786447243924,
+      "tag": "0004_quiet_payback",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786456778754,
+      "tag": "0005_spicy_miss_america",
+      "breakpoints": true
     }
   ]
 }

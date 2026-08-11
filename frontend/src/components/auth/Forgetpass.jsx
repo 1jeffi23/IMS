@@ -3,12 +3,11 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import api from "@/lib/axios";
+import { authClient } from "@/lib/auth-client";
+
 
 
 const Forgetpass = () => {
-  const navigate = useNavigate();
-
   const {
     register,
     handleSubmit,
@@ -16,22 +15,21 @@ const Forgetpass = () => {
     reset,
   } = useForm();
 
-  const onSubmit = async(data) => {
-    try {
-        await api.post('/api/auth/request-password-reset',{
-            email:data.email,
-            redirectTo: "http://localhost:5173/reset-password",
-        })
-        toast.success("Password reset email sent!");
-        reset();
-        
-    } catch (error) {
-        toast.error(error.response?.data?.message || "something wrong");
-        
-    }
+ const onSubmit = async (data) => {
+  const { data: response, error } =
+    await authClient.requestPasswordReset({
+      email: data.email.trim().toLowerCase(),
+      redirectTo: "http://localhost:5173/reset-password",
+    });
 
-   
-  };
+  if (error) {
+    toast.error(error.message || "Something went wrong");
+    return;
+  }
+
+  toast.success("Password reset email sent!");
+  reset();
+};
 
   return (
     /* Main Wrapper: Forced Theme (Light Mode Lock) */

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import api from "@/lib/axios";
+import { authClient } from "@/lib/auth-client";
 
 
 const Resetpass = () => {
@@ -23,23 +23,18 @@ const Resetpass = () => {
 
 
     const onSubmit = async (data) => {
-        try {
-            await api.post('/api/auth/reset-password', {
-                newPassword: data.password,
-                token,
-            })
-            toast.success("password reset successfully!");
-            reset();
+        const { data: response, error } = await authClient.resetPassword({
+            newPassword: data.password,
+            token,
+        });
 
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message || "Reset Failed"
-            )
-
+        if (error) {
+            toast.error(error.message || "Reset failed");
+            return;
         }
 
-
-
+        toast.success("Password reset successfully!");
+        reset();
     };
 
     return (

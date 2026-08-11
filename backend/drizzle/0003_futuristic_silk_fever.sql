@@ -1,0 +1,1 @@
+ALTER TABLE "product_batches" ADD CONSTRAINT "product_batches_batch_number_unique" UNIQUE("batch_number");

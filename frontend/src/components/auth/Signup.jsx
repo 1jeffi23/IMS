@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import api from "../../lib/axios";
+import { authClient } from "../../lib/auth-client.js";
 
 const Signup = () => {
 
@@ -15,37 +15,37 @@ const Signup = () => {
         reset,
     } = useForm();
 
-    const onSubmit = async (data) => {
-        console.log("data", data);
-        try {
-            const response = await api.post("/api/auth/sign-up/email", {
-                name: data.name,
-                email: data.email.trim().toLowerCase(),
-                password: data.password,
-                callbackURL: "http://localhost:5173/login",
-            });
+   const onSubmit = async (data) => {
+  const { data: response, error } = await authClient.signUp.email({
+    name: data.name,
+    email: data.email.trim().toLowerCase(),
+    password: data.password,
+    callbackURL: "http://localhost:5173/login",
+  });
 
-            console.log("SUCCESS STATUS:", response.status);
+  if (error) {
+    toast.error(error.message || "Signup failed");
+    return;
+  }
 
-            toast.success("Verification email sent!");
+  // Existing unverified user case
+  if (response?.token === null) {
+    toast.error(
+      "This email already exists. Please verify your email or login."
+    );
+    return;
+  }
 
-            reset();
+  console.log("SUCCESS DATA:", response);
 
-        } catch (error) {
-            //   console.log("FULL ERROR:", error);
-            const message =
-                error.response?.data?.message ||
-                error.response?.data?.error?.message ||
-                "Something went wrong";
-
-            toast.error(message);
-        }
-    };
+  toast.success("Verification email sent!");
+  reset();
+};
 
     return (
         /* Outer Container: Forced Fixed Theme (Light Mode Lock) */
         <div className="min-h-screen  bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
-
+          
             {/* Right Side Form Container */}
             <div className="lg:col-span-3 flex items-center justify-center bg-white px-8 py-10 sm:px-10 lg:px-16">
                 <div className="w-full max-w-lg">
