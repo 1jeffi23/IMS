@@ -4,7 +4,7 @@ import { toNodeHandler } from "better-auth/node";  //Adapter/Bridge that makes B
 //toNodeHandler connects Better Auth with Express/Node.js request-response system.
 import { auth } from "./src/user/auth/auth.js";
 import { authRoute } from './src/user/auth/authRoute.js';
-import {addProductBatchRoute, addProductRoute} from './src/product/productRoutes.js';
+import {addProductBatchRoute, addProductRoute, getAllProducts} from './src/product/productRoutes.js';
 import { createOrderRoute, updtaeOrderStatus } from './src/order/orderRoute.js';
 const app = express();
 app.use(cors({
@@ -22,6 +22,7 @@ app.use(express.json());
 // })
 
 app.use("/api/products",addProductRoute);
+app.use("/api/products",getAllProducts);
 app.use("/api/products",addProductBatchRoute);
 app.use("/api/orders",createOrderRoute);
 app.use("/api/orders",updtaeOrderStatus);

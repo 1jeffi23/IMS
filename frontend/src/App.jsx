@@ -7,6 +7,9 @@ import Resetpass from './components/auth/Resetpass'
 import { Toaster } from 'sonner'
 import ProtectedRoute from './contexts/ProtectedRoute'
 import Dashboard from './components/pages/Dashboard'
+import CreateProduct from './components/pages/createProduct'
+
+
 
 
 
@@ -22,9 +25,10 @@ function App() {
         <Route path='/login' element={<Login/>} />
         <Route  path='/forgot-password' element={<Forgetpass/>}  />
         <Route  path='/reset-password' element={<Resetpass/>}  />
-      <Route element={<ProtectedRoute/>}>
+      {/* <Route element={<ProtectedRoute/>}> */}
            <Route  path='/' element={<Dashboard/>} />
-      </Route>
+           <Route path='/addProduct' element = {<CreateProduct/>} />
+      {/* </Route> */}
         
       </Routes>
 

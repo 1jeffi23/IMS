@@ -3,6 +3,25 @@ import { db } from "../../db/index.js";
 import { productBatches } from "./productBatchModel.js";
 import { products } from "./productModel.js";
 
+// to get all procts from db
+export const getProducts = async (req,res) => {
+    try {
+        const allProducts = await db.select().from(products);
+
+    res.status(200).json({
+        message: "Products fteched successfully",
+        products: allProducts,
+    });
+        
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch products",
+            error: error.message,
+        });
+        
+    }
+    
+}
 
 //productModel controller
 export const createProduct = async (req, res) => {
