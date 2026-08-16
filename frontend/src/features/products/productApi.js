@@ -1,56 +1,61 @@
-// Need to use the React-specific entry point to import createApi
-import { resolveMultipleLabels } from '@base-ui/react/internals/resolveValueLabel';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const productApi = createApi({
-  reducerPath: 'productApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3000/api' }),
-   tagTypes: ["Products"],
+  reducerPath: "productApi",
+
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:3000/api",
+  }),
+
+  tagTypes: ["Products"],
+
   endpoints: (builder) => ({
-    
+    // Get all products
     getProducts: builder.query({
       query: () => "/products/",
       providesTags: ["Products"],
     }),
-    
-    getProductByid:  builder.query({
+
+    // Get single product
+    getProductByid: builder.query({
       query: (id) => `/products/${id}`,
-      providesTags:(result,error,id)=> [
-        {type:"Products",id}
-      ],
     }),
-  
+
+    // Create product
     createProduct: builder.mutation({
-        query: (data)=>({
-            url: "/products/add",
-            method: "POST",
-            body:data,
-        }),
-        invalidTags: ["Products"],
+      query: (data) => ({
+        url: "/products/add",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Products"],
     }),
 
+    // Update product
     updateProduct: builder.mutation({
-        query: (id,data)=>({
-            url: `/products/edit/${id}`,
-            method: "PUT",
-            body: data,
-        }),
-        invalidTags: ["Products"],
+      query: ({ id, data }) => ({
+        url: `/products/edit/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Products"],
     }),
 
+    // Delete product
     deleteProduct: builder.mutation({
-        query: (id)=>({
-            url: `/products/${id}`,
-            method: "DELETE",
-        }),
-        invalidTags: ["Products"],
+      query: (id) => ({
+        url: `/products/delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Products"],
     }),
-
   }),
-
 });
 
-// Export hooks for usage in functional components, which are
-// auto-generated based on the defined endpoints
-export const { useGetProductsQuery,useGetProductByidQury,useCreateProductMutation,useUpdateProductMutation,useDeleteProductMutation} = productApi
+export const {
+  useGetProductsQuery,
+  useGetProductByidQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} = productApi;

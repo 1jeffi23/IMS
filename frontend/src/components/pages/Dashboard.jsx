@@ -1,11 +1,14 @@
 import React from 'react'
-import Products from './Products'
-import ProductForm from './createProduct'
+import Products from './products/Products'
+import AddProductBatch from './products/AddProductBatch'
+import ViewProductBatches from './products/ViewProductBatches'
+
 
 const Dashboard = () => {
   return (
     <div>
-      <Products/>
+      {/* <Products/> */}
+    <ViewProductBatches/>
     </div>
   )
 }

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useCreateProductMutation } from "@/features/products/productApi";
 import { toast } from "sonner";
 
-const ProductForm = () => {
+const CreateProduct = () => {
     const {
         register,
         handleSubmit,
@@ -213,4 +213,4 @@ const ProductForm = () => {
     );
 };
 
-export default ProductForm;
+export default CreateProduct;

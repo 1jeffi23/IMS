@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, Search } from "lucide-react";
-import ViewProducts from "./viewProducts";
+import ProductsList from "./ProductsList";
 import { Link } from "react-router-dom";
 
 
@@ -50,7 +50,7 @@ const Products = () => {
         </CardHeader>
 
         <CardContent>
-           <ViewProducts/>
+           <ProductsList/>
         </CardContent>
       </Card>
 
