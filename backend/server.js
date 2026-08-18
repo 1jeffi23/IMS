@@ -2,11 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import { toNodeHandler } from "better-auth/node";  //Adapter/Bridge that makes Better Auth work with Node.js-style HTTP servers.
 //toNodeHandler connects Better Auth with Express/Node.js request-response system.
-import { auth } from "./src/user/auth/auth.js";
-import { authRoute } from './src/user/auth/authRoute.js';
-import { addProductRoute,deleteproduct,  getAllProducts, getProductByid, updateproduct} from './src/product/productRoutes.js';
-import { createOrderRoute, updtaeOrderStatus } from './src/order/orderRoute.js';
-import { addProductBatchRoute, deleteBatch, getAllBatches, getProdBatchById, updateBatch } from './src/product/productBatchRoutes.js';
+import { auth } from "./utils/auth.js";
+import { authRoute } from './src/routes/authRoute.js';
+import categoryRoutes from "./src/routes/categoryRoutes.js";
+import productRoutes from "./src/routes/productRoutes.js";
+import productBatchRoutes from "./src//routes/productBatchRoutes.js";
+import supplierRoutes from "./src/routes/supplierRoutes.js";
+import purchaseRoutes from "./src/routes/purchaseRoutes.js";
+
+import testRoutes from './src/testRoutes.js'
 const app = express();
 app.use(cors({
     origin: "http://localhost:5173",
@@ -18,25 +22,13 @@ app.all("/api/auth/*splat", authRoute);
 
 app.use(express.json());
 
-// app.get("/",(req,res)=>{
-//     return res.send('hey');
-// })
+app.use("/api",testRoutes);
 
-app.use("/api/products",getAllProducts);
-app.use("/api/products",getProductByid);
-app.use("/api/products",addProductRoute);
-app.use("/api/products",updateproduct);
-app.use("/api/products",deleteproduct);
-
-app.use("/api/prod_batches",addProductBatchRoute);
-app.use("/api/prod_batches",getAllBatches);
-app.use("api/prod_batches",getProdBatchById);
-app.use("/api/prod_batches",updateBatch);
-app.use("/api/prod_batches",deleteBatch);
-
-app.use("/api/orders",createOrderRoute);
-app.use("/api/orders",updtaeOrderStatus);
-
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/product-batches", productBatchRoutes);
+app.use( "/api/suppliers", supplierRoutes);
+app.use( "/api/purchases",purchaseRoutes);
 
 
 app.listen(3000,()=> console.log('server running'))

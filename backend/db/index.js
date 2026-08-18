@@ -1,10 +1,13 @@
-
 import dotenv from "dotenv";
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 
-dotenv.config({ path: "./config/.env" });
+dotenv.config({
+  path: "./config/.env",
+});
 
-const sql = neon(process.env.DB_URL);
+const pool = new Pool({
+  connectionString: process.env.DB_URL,
+});
 
-export const db = drizzle(sql);    //created neon nd drizzle connection
+export const db = drizzle(pool);

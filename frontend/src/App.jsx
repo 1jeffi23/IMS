@@ -6,13 +6,11 @@ import Forgetpass from './components/auth/Forgetpass'
 import Resetpass from './components/auth/Resetpass'
 import { Toaster } from 'sonner'
 import ProtectedRoute from './contexts/ProtectedRoute'
-import Dashboard from './components/pages/Dashboard'
-import CreateProduct from './components/pages/products/createProduct'
-import Products from './components/pages/products/Products'
-import EditProduct from './components/pages/products/EditProduct'
-import ViewProductBatches from './components/pages/products/ViewProductBatches'
-import AddProductBatch from './components/pages/products/AddProductBatch'
-import EditProductBatch from './components/pages/products/EditProductBatch'
+import Dashboard from './pages/Dashboard'
+import Products from './pages/products/Products'
+import Batches from './pages/batches/Batches'
+import Suppliers from './pages/suppliers/Suppliers'
+
 
 
 
@@ -34,12 +32,9 @@ function App() {
           <Route path='/' element={<Dashboard />} />
 
           <Route path='/products' element={<Products />} />
-          <Route path='/addProduct' element={<CreateProduct />} />
-          <Route path='/products/edit/:id' element={<EditProduct />} />
-
-          <Route path='/product-batches' element={<ViewProductBatches />} />
-          <Route path='/product-batches/add' element={<AddProductBatch />} />
-          <Route path='/product-batches/update-batch/:id' element={<EditProductBatch />} />
+          <Route path="/batches" element={<Batches/>}/>
+          <Route path="/suppliers" element={<Suppliers/>}/>
+  
 
           {/* </Route> */}
 
