@@ -5,6 +5,7 @@ import { productApi } from './services/productApi'
 import { categoryApi } from './services/categoryApi'
 import { productBatchApi } from './services/productBatchApi'
 import { supplierApi } from "./services/supplierApi";
+import { purchaseApi } from "./services/purchaseApi";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     [categoryApi.reducerPath]: categoryApi.reducer,
     [productBatchApi.reducerPath]: productBatchApi.reducer,
     [supplierApi.reducerPath]: supplierApi.reducer,
+    [purchaseApi.reducerPath]: purchaseApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -19,7 +21,8 @@ export const store = configureStore({
       concat(productApi.middleware).
       concat(categoryApi.middleware)
       .concat(productBatchApi.middleware)
-      .concat(supplierApi.middleware),
+      .concat(supplierApi.middleware)
+      .concat(purchaseApi.middleware),
 })
 
 setupListeners(store.dispatch)
