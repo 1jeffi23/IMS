@@ -6,6 +6,8 @@ import { productBatch } from "./productBatchModel.js";
 import { supplier } from "./supplierModel.js";
 import { purchase } from "./purchaseModel.js";
 import { purchaseItem } from "./purchaseItemModel.js";
+import { sale} from "./saleModel.js";
+import {saleItem} from "./saleItemModel.js"
 
 
 // Category → Products
@@ -92,3 +94,20 @@ export const purchaseItemRelations = relations(
     }),
   })
 );
+
+export const salesRelations = relations(sale, ({ many }) => ({
+  saleItem: many(saleItem),
+}));
+
+export const saleItemsRelations = relations(saleItem, ({ one }) => ({
+  sale: one(sale, {
+    fields: [saleItem.saleId],
+    references: [sale.id],
+  }),
+
+  product: one(products, {
+    fields: [saleItem.productId],
+    references: [products.id],
+  }),
+}));
+

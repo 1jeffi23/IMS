@@ -9,8 +9,11 @@ import productRoutes from "./src/routes/productRoutes.js";
 import productBatchRoutes from "./src//routes/productBatchRoutes.js";
 import supplierRoutes from "./src/routes/supplierRoutes.js";
 import purchaseRoutes from "./src/routes/purchaseRoutes.js";
+import customerRoutes from "./src/routes/customerRoutes.js";
+import saleRoutes from "./src/routes/saleRoutes.js";
 
-import testRoutes from './src/testRoutes.js'
+
+
 const app = express();
 app.use(cors({
     origin: "http://localhost:5173",
@@ -22,13 +25,14 @@ app.all("/api/auth/*splat", authRoute);
 
 app.use(express.json());
 
-app.use("/api",testRoutes);
 
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/product-batches", productBatchRoutes);
 app.use( "/api/suppliers", supplierRoutes);
 app.use( "/api/purchases",purchaseRoutes);
+app.use( "/api/customers",customerRoutes);
+app.use( "/api/sales",saleRoutes);
 
 
 app.listen(3000,()=> console.log('server running'))

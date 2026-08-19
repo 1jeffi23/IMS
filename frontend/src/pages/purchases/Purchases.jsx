@@ -257,7 +257,7 @@ const Purchases = () => {
 
         <div className="overflow-x-auto">
 
-          <table className="w-full min-w-[800px]">
+          <table className="w-full min-w-200">
 
             <thead className="bg-gray-50 border-b">
 
