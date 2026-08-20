@@ -19,7 +19,7 @@ const router = express.Router();
 // Admin + Manager + Staff
 router.get(
   "/",
-//   requireAuth,
+  requireAuth,
   getProducts
 );
 
@@ -27,7 +27,7 @@ router.get(
 // View single product
 router.get(
   "/:id",
-//   requireAuth,
+  requireAuth,
   getProductById
 );
 
@@ -36,8 +36,8 @@ router.get(
 // Admin + Manager
 router.post(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   createProduct
 );
 
@@ -46,8 +46,8 @@ router.post(
 // Admin + Manager
 router.put(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   updateProduct
 );
 

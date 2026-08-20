@@ -4,6 +4,8 @@ import { db } from "../../db/index.js";
 import { product } from "../models/productModel.js";
 import { productBatch } from "../models/productBatchModel.js";
 
+import { createAuditLog } from "../../utils/auditLogger.js";
+
 
 // =====================================================
 // CREATE PRODUCT BATCH
@@ -20,10 +22,6 @@ export const createProductBatch = async (req, res) => {
       expiryDate,
       storageLocation,
     } = req.body;
-
-    // -----------------------------
-    // Validation
-    // -----------------------------
 
     if (!productId) {
       return res.status(400).json({
@@ -66,10 +64,7 @@ export const createProductBatch = async (req, res) => {
     const productIdNumber = Number(productId);
     const batchQuantity = Number(quantity);
 
-    // -----------------------------
     // Check product
-    // -----------------------------
-
     const [existingProduct] = await db
       .select()
       .from(product)
@@ -87,11 +82,7 @@ export const createProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
     // Check existing batch
-    // product + batchNumber
-    // -----------------------------
-
     const [existingBatch] = await db
       .select()
       .from(productBatch)
@@ -116,13 +107,21 @@ export const createProductBatch = async (req, res) => {
         .where(eq(productBatch.id, existingBatch.id))
         .returning();
 
-      // Increase total product stock
       await db
         .update(product)
         .set({
           quantity: sql`${product.quantity} + ${batchQuantity}`,
         })
         .where(eq(product.id, productIdNumber));
+
+      // AUDIT LOG
+      await createAuditLog({
+        userId: req.user.id,
+        action: "UPDATE",
+        module: "PRODUCT_BATCH",
+        entityId: String(updatedBatch.id),
+        description: `Added ${batchQuantity} quantity to existing batch ${updatedBatch.batchNumber} of product ${existingProduct.name}`,
+      });
 
       return res.status(200).json({
         message: "Product batch quantity updated successfully",
@@ -147,13 +146,21 @@ export const createProductBatch = async (req, res) => {
       })
       .returning();
 
-    // Increase total product stock
     await db
       .update(product)
       .set({
         quantity: sql`${product.quantity} + ${batchQuantity}`,
       })
       .where(eq(product.id, productIdNumber));
+
+    // AUDIT LOG
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE",
+      module: "PRODUCT_BATCH",
+      entityId: String(newBatch.id),
+      description: `Created batch ${newBatch.batchNumber} for product ${existingProduct.name}`,
+    });
 
     return res.status(201).json({
       message: "Product batch created successfully",
@@ -173,6 +180,7 @@ export const createProductBatch = async (req, res) => {
 
 // =====================================================
 // GET ALL PRODUCT BATCHES
+// NO AUDIT LOG
 // =====================================================
 
 export const getProductBatches = async (req, res) => {
@@ -180,23 +188,14 @@ export const getProductBatches = async (req, res) => {
     const allBatches = await db
       .select({
         id: productBatch.id,
-
         productId: productBatch.productId,
-
         batchNumber: productBatch.batchNumber,
-
         quantity: productBatch.quantity,
-
         costPrice: productBatch.costPrice,
-
         receivedDate: productBatch.receivedDate,
-
         expiryDate: productBatch.expiryDate,
-
         storageLocation: productBatch.storageLocation,
-
         productName: product.name,
-
         sku: product.sku,
       })
       .from(productBatch)
@@ -224,6 +223,7 @@ export const getProductBatches = async (req, res) => {
 
 // =====================================================
 // GET SINGLE PRODUCT BATCH
+// NO AUDIT LOG
 // =====================================================
 
 export const getProductBatchById = async (req, res) => {
@@ -239,23 +239,14 @@ export const getProductBatchById = async (req, res) => {
     const [batch] = await db
       .select({
         id: productBatch.id,
-
         productId: productBatch.productId,
-
         batchNumber: productBatch.batchNumber,
-
         quantity: productBatch.quantity,
-
         costPrice: productBatch.costPrice,
-
         receivedDate: productBatch.receivedDate,
-
         expiryDate: productBatch.expiryDate,
-
         storageLocation: productBatch.storageLocation,
-
         productName: product.name,
-
         sku: product.sku,
       })
       .from(productBatch)
@@ -310,10 +301,7 @@ export const updateProductBatch = async (req, res) => {
       storageLocation,
     } = req.body;
 
-    // -----------------------------
     // Find existing batch
-    // -----------------------------
-
     const [existingBatch] = await db
       .select()
       .from(productBatch)
@@ -325,9 +313,11 @@ export const updateProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
-    // Validation
-    // -----------------------------
+    // Find product for audit description
+    const [existingProduct] = await db
+      .select()
+      .from(product)
+      .where(eq(product.id, existingBatch.productId));
 
     if (!batchNumber?.trim()) {
       return res.status(400).json({
@@ -355,11 +345,7 @@ export const updateProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
-    // Check duplicate batch number
-    // for same product
-    // -----------------------------
-
+    // Check duplicate batch
     const [duplicateBatch] = await db
       .select()
       .from(productBatch)
@@ -379,20 +365,13 @@ export const updateProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
-    // Quantity difference
-    // -----------------------------
-
     const oldQuantity = Number(existingBatch.quantity);
     const newQuantity = Number(quantity);
 
     const quantityDifference =
       newQuantity - oldQuantity;
 
-    // -----------------------------
     // Update batch
-    // -----------------------------
-
     const [updatedBatch] = await db
       .update(productBatch)
       .set({
@@ -408,16 +387,22 @@ export const updateProductBatch = async (req, res) => {
       .where(eq(productBatch.id, batchId))
       .returning();
 
-    // -----------------------------
     // Update total product quantity
-    // -----------------------------
-
     await db
       .update(product)
       .set({
         quantity: sql`${product.quantity} + ${quantityDifference}`,
       })
       .where(eq(product.id, existingBatch.productId));
+
+    // AUDIT LOG
+    await createAuditLog({
+      userId: req.user.id,
+      action: "UPDATE",
+      module: "PRODUCT_BATCH",
+      entityId: String(updatedBatch.id),
+      description: `Updated batch ${updatedBatch.batchNumber} of product ${existingProduct?.name || existingBatch.productId}`,
+    });
 
     return res.status(200).json({
       message: "Product batch updated successfully",
@@ -449,10 +434,7 @@ export const deleteProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
     // Find batch
-    // -----------------------------
-
     const [existingBatch] = await db
       .select()
       .from(productBatch)
@@ -464,11 +446,6 @@ export const deleteProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
-    // Don't allow deleting stock
-    // silently
-    // -----------------------------
-
     if (Number(existingBatch.quantity) > 0) {
       return res.status(400).json({
         message:
@@ -476,13 +453,25 @@ export const deleteProductBatch = async (req, res) => {
       });
     }
 
-    // -----------------------------
-    // Delete batch
-    // -----------------------------
+    // Find product for audit description
+    const [existingProduct] = await db
+      .select()
+      .from(product)
+      .where(eq(product.id, existingBatch.productId));
 
+    // Delete batch
     await db
       .delete(productBatch)
       .where(eq(productBatch.id, batchId));
+
+    // AUDIT LOG
+    await createAuditLog({
+      userId: req.user.id,
+      action: "DELETE",
+      module: "PRODUCT_BATCH",
+      entityId: String(existingBatch.id),
+      description: `Deleted batch ${existingBatch.batchNumber} of product ${existingProduct?.name || existingBatch.productId}`,
+    });
 
     return res.status(200).json({
       message: "Product batch deleted successfully",

@@ -16,22 +16,22 @@ const router = express.Router();
 // Customers
 router.get(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   getCustomers
 );
 
 router.get(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   getCustomerById
 );
 
 router.post(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   createCustomer
 );
 

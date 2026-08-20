@@ -10,6 +10,8 @@ import {
   sql,
 } from "drizzle-orm";
 
+import { createAuditLog } from "../../utils/auditLogger.js";
+
 
 // =====================================================
 // CREATE SALE
@@ -146,8 +148,6 @@ export const createSale = async (req, res) => {
 
     }
 
-
-    
 
     // =================================================
     // DATABASE TRANSACTION
@@ -425,6 +425,30 @@ export const createSale = async (req, res) => {
 
 
     // =================================================
+    // AUDIT LOG
+    // =================================================
+
+    await createAuditLog({
+
+      userId:
+        req.user.id,
+
+      action:
+        "CREATE",
+
+      module:
+        "SALE",
+
+      entityId:
+        String(result.sale.id),
+
+      description:
+        `Created sale ${result.sale.id}`,
+
+    });
+
+
+    // =================================================
     // SUCCESS
     // =================================================
 
@@ -465,6 +489,7 @@ export const createSale = async (req, res) => {
 
 // =====================================================
 // GET ALL SALES
+// NO AUDIT LOG
 // =====================================================
 
 export const getSales = async (req, res) => {
@@ -535,6 +560,7 @@ export const getSales = async (req, res) => {
       error
     );
 
+
     return res.status(500).json({
 
       message:
@@ -546,15 +572,18 @@ export const getSales = async (req, res) => {
 
 };
 
+
 // =====================================================
 // GET SALE BY ID
+// NO AUDIT LOG
 // =====================================================
 
 export const getSaleById = async (req, res) => {
 
   try {
 
-    const saleId = Number(req.params.id);
+    const saleId =
+      Number(req.params.id);
 
 
     // =================================================
@@ -581,7 +610,8 @@ export const getSaleById = async (req, res) => {
 
       .select({
 
-        id: sale.id,
+        id:
+          sale.id,
 
         customerId:
           sale.customerId,

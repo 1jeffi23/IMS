@@ -26,6 +26,12 @@ import {
   and,
 } from "drizzle-orm";
 
+import { createAuditLog } from "../../utils/auditLogger.js";
+
+
+// ==========================================
+// CREATE PURCHASE
+// ==========================================
 
 export const createPurchase = async (req, res) => {
   try {
@@ -74,10 +80,12 @@ export const createPurchase = async (req, res) => {
     const [existingSupplier] = await db
       .select()
       .from(supplier)
-      .where(eq(
-        supplier.id,
-        Number(supplierId)
-      ));
+      .where(
+        eq(
+          supplier.id,
+          Number(supplierId)
+        )
+      );
 
     if (!existingSupplier) {
       return res.status(404).json({
@@ -87,7 +95,8 @@ export const createPurchase = async (req, res) => {
 
     if (!existingSupplier.isActive) {
       return res.status(400).json({
-        message: "Cannot create purchase from an inactive supplier",
+        message:
+          "Cannot create purchase from an inactive supplier",
       });
     }
 
@@ -120,14 +129,13 @@ export const createPurchase = async (req, res) => {
             storageLocation,
           } = item;
 
-
           const qty = Number(quantity);
           const cost = Number(costPrice);
 
 
-          // -------------------------------
-          // Validate
-          // -------------------------------
+          // =================================
+          // VALIDATION
+          // =================================
 
           if (!productId) {
             throw new Error(
@@ -225,7 +233,6 @@ export const createPurchase = async (req, res) => {
                     ${productBatch.quantity}
                     + ${qty}
                   `,
-
                   updatedAt: new Date(),
                 })
                 .where(
@@ -258,7 +265,8 @@ export const createPurchase = async (req, res) => {
                   batchNumber:
                     batchNumber.trim(),
 
-                  quantity: qty,
+                  quantity:
+                    qty,
 
                   costPrice:
                     String(cost),
@@ -270,8 +278,7 @@ export const createPurchase = async (req, res) => {
                     expiryDate || null,
 
                   storageLocation:
-                    storageLocation?.trim() ||
-                    null,
+                    storageLocation?.trim() || null,
 
                 })
                 .returning();
@@ -319,7 +326,8 @@ export const createPurchase = async (req, res) => {
             batchId:
               batch.id,
 
-            quantity: qty,
+            quantity:
+              qty,
 
             costPrice:
               String(cost),
@@ -390,6 +398,25 @@ export const createPurchase = async (req, res) => {
     );
 
 
+    // ==========================================
+    // AUDIT LOG
+    // ==========================================
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE",
+      module: "PURCHASE",
+      entityId: String(result.purchase.id),
+      description:
+        `Created purchase ${result.purchase.id} ` +
+        `with invoice ${result.purchase.invoiceNumber}`,
+    });
+
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
     return res.status(201).json({
 
       message:
@@ -421,6 +448,12 @@ export const createPurchase = async (req, res) => {
 
   }
 };
+
+
+// ==========================================
+// GET ALL PURCHASES
+// NO AUDIT LOG
+// ==========================================
 
 export const getPurchases = async (req, res) => {
   try {
@@ -476,6 +509,12 @@ export const getPurchases = async (req, res) => {
     });
   }
 };
+
+
+// ==========================================
+// GET PURCHASE BY ID
+// NO AUDIT LOG
+// ==========================================
 
 export const getPurchaseById = async (
   req,
@@ -630,4 +669,3 @@ export const getPurchaseById = async (
   }
 
 };
-

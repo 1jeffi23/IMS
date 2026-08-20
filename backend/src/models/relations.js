@@ -1,5 +1,8 @@
 import { relations } from "drizzle-orm";
-
+import {
+  user,
+} from "./authModel.js";
+import { auditLog } from "./auditLogModel.js";
 import { category } from "./categoryModel.js";
 import { product } from "./productModel.js";
 import { productBatch } from "./productBatchModel.js";
@@ -110,4 +113,15 @@ export const saleItemsRelations = relations(saleItem, ({ one }) => ({
     references: [products.id],
   }),
 }));
+
+
+export const auditLogRelations = relations(
+  auditLog,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [auditLog.userId],
+      references: [user.id],
+    }),
+  })
+);
 

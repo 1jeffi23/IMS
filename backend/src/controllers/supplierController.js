@@ -8,6 +8,13 @@ import {
   eq,
 } from "drizzle-orm";
 
+import { createAuditLog } from "../../utils/auditLogger.js";
+
+
+// =====================================================
+// CREATE SUPPLIER
+// =====================================================
+
 export const createSupplier = async (req, res) => {
   try {
     const {
@@ -33,6 +40,20 @@ export const createSupplier = async (req, res) => {
       })
       .returning();
 
+
+    // =================================================
+    // AUDIT LOG
+    // =================================================
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE",
+      module: "SUPPLIER",
+      entityId: String(newSupplier.id),
+      description: `Created supplier ${newSupplier.name}`,
+    });
+
+
     return res.status(201).json({
       message: "Supplier created successfully",
       supplier: newSupplier,
@@ -46,6 +67,12 @@ export const createSupplier = async (req, res) => {
     });
   }
 };
+
+
+// =====================================================
+// GET ALL SUPPLIERS
+// No audit log for GET
+// =====================================================
 
 export const getSuppliers = async (req, res) => {
   try {
@@ -66,6 +93,12 @@ export const getSuppliers = async (req, res) => {
     });
   }
 };
+
+
+// =====================================================
+// GET SUPPLIER BY ID
+// No audit log for GET
+// =====================================================
 
 export const getSupplierById = async (req, res) => {
   try {
@@ -104,6 +137,11 @@ export const getSupplierById = async (req, res) => {
     });
   }
 };
+
+
+// =====================================================
+// UPDATE SUPPLIER
+// =====================================================
 
 export const updateSupplier = async (req, res) => {
   try {
@@ -165,11 +203,26 @@ export const updateSupplier = async (req, res) => {
       updateData.isActive = Boolean(isActive);
     }
 
+
     const [updatedSupplier] = await db
       .update(supplier)
       .set(updateData)
       .where(eq(supplier.id, supplierId))
       .returning();
+
+
+    // =================================================
+    // AUDIT LOG
+    // =================================================
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "UPDATE",
+      module: "SUPPLIER",
+      entityId: String(updatedSupplier.id),
+      description: `Updated supplier ${updatedSupplier.name}`,
+    });
+
 
     return res.status(200).json({
       message: "Supplier updated successfully",
@@ -187,4 +240,3 @@ export const updateSupplier = async (req, res) => {
     });
   }
 };
-

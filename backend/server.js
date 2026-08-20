@@ -11,6 +11,8 @@ import supplierRoutes from "./src/routes/supplierRoutes.js";
 import purchaseRoutes from "./src/routes/purchaseRoutes.js";
 import customerRoutes from "./src/routes/customerRoutes.js";
 import saleRoutes from "./src/routes/saleRoutes.js";
+import auditLogRoutes from "./src/routes/auditLogRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
 
 
 
@@ -33,6 +35,8 @@ app.use( "/api/suppliers", supplierRoutes);
 app.use( "/api/purchases",purchaseRoutes);
 app.use( "/api/customers",customerRoutes);
 app.use( "/api/sales",saleRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/users", userRoutes);
 
 
 app.listen(3000,()=> console.log('server running'))

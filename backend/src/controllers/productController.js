@@ -1,9 +1,14 @@
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { product } from "../models/productModel.js";
 import { category } from "../models/categoryModel.js";
+import { createAuditLog } from "../../utils/auditLogger.js";
 
+
+// ==========================================
 // CREATE PRODUCT
+// ==========================================
+
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -90,6 +95,18 @@ export const createProduct = async (req, res) => {
       })
       .returning();
 
+    // ==========================================
+    // AUDIT LOG
+    // ==========================================
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE",
+      module: "PRODUCT",
+      entityId: String(newProduct.id),
+      description: `Created product "${newProduct.name}"`,
+    });
+
     return res.status(201).json({
       message: "Product created successfully",
       product: newProduct,
@@ -105,7 +122,11 @@ export const createProduct = async (req, res) => {
 };
 
 
+// ==========================================
 // GET ALL PRODUCTS
+// NO AUDIT LOG
+// ==========================================
+
 export const getProducts = async (req, res) => {
   try {
     const products = await db
@@ -145,7 +166,11 @@ export const getProducts = async (req, res) => {
 };
 
 
+// ==========================================
 // GET PRODUCT BY ID
+// NO AUDIT LOG
+// ==========================================
+
 export const getProductById = async (req, res) => {
   try {
     const productId = Number(req.params.id);
@@ -199,7 +224,10 @@ export const getProductById = async (req, res) => {
 };
 
 
+// ==========================================
 // UPDATE PRODUCT
+// ==========================================
+
 export const updateProduct = async (req, res) => {
   try {
     const productId = Number(req.params.id);
@@ -268,59 +296,71 @@ export const updateProduct = async (req, res) => {
 
     const updateData = {};
 
-if (name !== undefined) {
-  if (!name.trim()) {
-    return res.status(400).json({
-      message: "Product name cannot be empty",
-    });
-  }
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({
+          message: "Product name cannot be empty",
+        });
+      }
 
-  updateData.name = name.trim();
-}
+      updateData.name = name.trim();
+    }
 
-if (sku !== undefined) {
-  if (!sku.trim()) {
-    return res.status(400).json({
-      message: "SKU cannot be empty",
-    });
-  }
+    if (sku !== undefined) {
+      if (!sku.trim()) {
+        return res.status(400).json({
+          message: "SKU cannot be empty",
+        });
+      }
 
-  updateData.sku = sku.trim();
-}
+      updateData.sku = sku.trim();
+    }
 
-if (categoryId !== undefined) {
-  updateData.categoryId = Number(categoryId);
-}
+    if (categoryId !== undefined) {
+      updateData.categoryId = Number(categoryId);
+    }
 
-if (unit !== undefined) {
-  updateData.unit = unit.trim() || "piece";
-}
+    if (unit !== undefined) {
+      updateData.unit = unit.trim() || "piece";
+    }
 
-if (sellingPrice !== undefined) {
-  updateData.sellingPrice = String(sellingPrice);
-}
+    if (sellingPrice !== undefined) {
+      updateData.sellingPrice = String(sellingPrice);
+    }
 
-if (reorderLevel !== undefined) {
-  updateData.reorderLevel = Number(reorderLevel);
-}
+    if (reorderLevel !== undefined) {
+      updateData.reorderLevel = Number(reorderLevel);
+    }
 
-if (storageTime !== undefined) {
-  updateData.storageTime =
-    storageTime === null || storageTime === ""
-      ? null
-      : Number(storageTime);
-}
+    if (storageTime !== undefined) {
+      updateData.storageTime =
+        storageTime === null || storageTime === ""
+          ? null
+          : Number(storageTime);
+    }
 
-// STATUS
-if (isActive !== undefined) {
-  updateData.isActive = Boolean(isActive);
-}
+    // STATUS
+    if (isActive !== undefined) {
+      updateData.isActive = Boolean(isActive);
+    }
 
     const [updatedProduct] = await db
       .update(product)
       .set(updateData)
       .where(eq(product.id, productId))
       .returning();
+
+    // ==========================================
+    // AUDIT LOG
+    // ==========================================
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "UPDATE",
+      module: "PRODUCT",
+      entityId: String(updatedProduct.id),
+      description: `Updated product "${updatedProduct.name}"`,
+    });
 
     return res.status(200).json({
       message: "Product updated successfully",
@@ -335,5 +375,3 @@ if (isActive !== undefined) {
     });
   }
 };
-
-

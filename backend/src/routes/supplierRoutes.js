@@ -20,8 +20,8 @@ const router = express.Router();
 
 router.get(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager", "staff"),
+  requireAuth,
+  requireRole("admin", "manager", "cachier"),
   getSuppliers
 );
 
@@ -33,8 +33,8 @@ router.get(
 
 router.get(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager", "staff"),
+  requireAuth,
+  requireRole("admin", "manager", "cachier"),
   getSupplierById
 );
 
@@ -46,8 +46,8 @@ router.get(
 
 router.post(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   createSupplier
 );
 
@@ -59,8 +59,8 @@ router.post(
 
 router.put(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   updateSupplier
 );
 

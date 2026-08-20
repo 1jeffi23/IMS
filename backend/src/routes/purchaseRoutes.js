@@ -6,7 +6,10 @@ import {
   getPurchaseById,
 } from "../controllers/purchaseController.js";
 
-import { requireAuth } from "../../middlewares/authMiddleware.js";
+import {
+  requireAuth,
+  requireRole,
+} from "../../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -15,6 +18,7 @@ const router = express.Router();
 router.post(
   "/",
   requireAuth,
+  requireRole("admin", "manager"),
   createPurchase
 );
 
@@ -22,7 +26,8 @@ router.post(
 // Get All Purchases
 router.get(
   "/",
-//   requireAuth,
+  requireAuth,
+  requireRole("admin", "manager"),
   getPurchases
 );
 
@@ -30,7 +35,8 @@ router.get(
 // Get Single Purchase
 router.get(
   "/:id",
-//   requireAuth,
+  requireAuth,
+  requireRole("admin", "manager"),
   getPurchaseById
 );
 

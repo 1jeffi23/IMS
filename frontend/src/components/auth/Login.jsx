@@ -1,10 +1,9 @@
-import React, { useContext } from "react";
+import React from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
-
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,48 +17,44 @@ const Login = () => {
 
   // Email / Password Login
   const submit = async (data) => {
-    const { data: result, error } = await authClient.signIn.email({
-      email: data.email.trim().toLowerCase(),
-      password: data.password,
-    });
+    const { data: result, error } =
+      await authClient.signIn.email({
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+      });
 
     if (error) {
       toast.error(error.message || "Login failed");
       return;
     }
 
+    // console.log("LOGIN SUCCESS:", result);
+
     toast.success("Login Successful!");
+
     reset();
-    navigate("/");
+
+    // AuthContext/useSession will automatically get the updated session.
+    navigate("/", { replace: true });
   };
 
   // GitHub Login
-  const LoginWithGithub = async () => {
-    console.log("button clicked")
-    await authClient.signIn.social({
-      provider: "github",
-      callbackURL: "/",
-    });
+  const loginWithGithub = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "github",
+        callbackURL: "/",
+      });
+    } catch (error) {
+      toast.error("GitHub login failed");
+    }
   };
 
-  // // Google Login
-  // const LoginWithGoogle = async () => {
-  //   await authClient.signIn.social({
-  //     provider: "google",
-  //     callbackURL: "/",
-  //   });
-  // };
-
   return (
-    /* Main Wrapper: Fixed theme styling added (light mode appearance forced) */
-    <div className="min-h-screen  bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
-      
-     
-
-      {/* Right Side - Form Container */}
-      <div className="lg:col-span-3 flex items-center justify-center bg-white px-6 py-10 sm:px-8 lg:px-12">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-[#6D28D9] selection:text-white">
+      <div className="flex min-h-screen items-center justify-center bg-white px-6 py-10 sm:px-8 lg:px-12">
         <div className="w-full max-w-lg">
-          
+
           {/* Heading */}
           <div className="mb-8">
             <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">
@@ -72,9 +67,11 @@ const Login = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(submit)} className="space-y-6">
-            
-            {/* Email Field */}
+          <form
+            onSubmit={handleSubmit(submit)}
+            className="space-y-6"
+          >
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
                 Email Address
@@ -93,6 +90,7 @@ const Login = () => {
                 })}
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
               />
+
               {errors.email && (
                 <p className="mt-1 text-sm text-rose-600">
                   {errors.email.message}
@@ -100,7 +98,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-medium text-slate-700">
@@ -133,6 +131,7 @@ const Login = () => {
                 })}
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 transition focus:border-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-[#6D28D9]/20"
               />
+
               {errors.password && (
                 <p className="mt-1 text-sm text-rose-600">
                   {errors.password.message}
@@ -140,7 +139,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Login Button */}
             <Button
               type="submit"
               className="h-12 w-full bg-[#6D28D9] text-base font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
@@ -148,7 +147,7 @@ const Login = () => {
               Login
             </Button>
 
-            {/* Bottom Text */}
+            {/* Signup */}
             <p className="text-center text-sm text-slate-500">
               Don't have an account?{" "}
               <Link
@@ -158,10 +157,22 @@ const Login = () => {
                 Sign Up
               </Link>
             </p>
-            <h4 className="text-center text-sm text-slate-500">_______________OR________________</h4>
-            <button onClick={LoginWithGithub}
-             className="h-12 w-full bg-[#6D28D9] text-base font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
-            >Login With Github</button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-300" />
+              <span className="text-sm text-slate-500">OR</span>
+              <div className="h-px flex-1 bg-slate-300" />
+            </div>
+
+            {/* GitHub */}
+            <button
+              type="button"
+              onClick={loginWithGithub}
+              className="h-12 w-full rounded-md bg-[#6D28D9] text-base font-semibold text-white hover:bg-[#5B21B6] cursor-pointer"
+            >
+              Login With GitHub
+            </button>
           </form>
         </div>
       </div>

@@ -20,7 +20,7 @@ const router = express.Router();
 // Admin + Manager + Staff
 router.get(
   "/",
-//   requireAuth,
+  requireAuth,
   getCategories
 );
 
@@ -28,7 +28,7 @@ router.get(
 // View single category
 router.get(
   "/:id",
-//   requireAuth,
+  requireAuth,
   getCategoryById
 );
 

@@ -35,7 +35,7 @@ router.get(
 
 router.get(
   "/:id",
-//   requireAuth,
+  requireAuth,
   getProductBatchById
 );
 
@@ -47,8 +47,8 @@ router.get(
 
 router.post(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   createProductBatch
 );
 
@@ -60,8 +60,8 @@ router.post(
 
 router.put(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager"),
+  requireAuth,
+  requireRole("admin", "manager"),
   updateProductBatch
 );
 

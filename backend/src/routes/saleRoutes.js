@@ -14,22 +14,22 @@ const router = express.Router();
 // Sales
 router.get(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   getSales
 );
 
 router.get(
   "/:id",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   getSaleById
 );
 
 router.post(
   "/",
-//   requireAuth,
-//   requireRole("admin", "manager", "cashier"),
+  requireAuth,
+  requireRole("admin", "manager", "cashier"),
   createSale
 );
 

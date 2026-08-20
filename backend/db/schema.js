@@ -10,6 +10,7 @@ export * from "../src/models/purchaseItemModel.js";
 export * from "../src/models/saleModel.js";
 export * from "../src/models/saleItemModel.js";
 export * from "../src/models/customerModel.js";
+export * from "../src/models/auditLogModel.js";
 
 
 
