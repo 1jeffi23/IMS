@@ -347,7 +347,7 @@ const Customers = () => {
 
           <div className="overflow-x-auto">
 
-            <table className="w-full min-w-[750px]">
+            <table className="w-full min-w-187.5">
 
               <thead className="bg-gray-50 border-b">
 
