@@ -4,6 +4,8 @@ import ProductForm from "./ProductForm";
 import ProductStats from "./ProductStats";
 import ProductTable from "./ProductTable";
 import { Package, Plus, Search, SlidersHorizontal, RotateCcw, XCircle } from "lucide-react";
+import ErrorState from "../loader/ErrorState";
+import Loader from "../loader/Loader";
 
 const Products = () => {
   const { data, isLoading, isError, error } = useGetProductsQuery();
@@ -127,68 +129,19 @@ const Products = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-7">
-            <div className="h-8 w-40 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="h-4 w-72 bg-gray-100 rounded mt-2 animate-pulse" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="bg-white border rounded-2xl p-5"
-              >
-                <div className="h-11 w-11 bg-gray-100 rounded-xl animate-pulse" />
-                <div className="h-4 w-28 bg-gray-100 rounded mt-5 animate-pulse" />
-                <div className="h-7 w-16 bg-gray-200 rounded mt-2 animate-pulse" />
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 bg-white border rounded-2xl p-5">
-            <div className="h-11 bg-gray-100 rounded-lg animate-pulse" />
-
-            <div className="space-y-3 mt-5">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div
-                  key={item}
-                  className="h-14 bg-gray-100 rounded-lg animate-pulse"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+     return <Loader text="Loading Products..." />;
   }
 
   if (isError) {
     return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="border border-red-200 bg-red-50 rounded-2xl p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-                <XCircle size={21} className="text-red-600" />
-              </div>
-
-              <div>
-                <h2 className="font-semibold text-red-800">
-                  Failed to load products
-                </h2>
-
-                <p className="text-sm text-red-600 mt-1">
-                  {error?.data?.message || "Something went wrong"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+       <ErrorState
+         title="Failed to load Products"
+         message={
+           error?.data?.message ||
+           "Something went wrong while fetching products."
+         }
+       />
+     );
   }
 
   return (

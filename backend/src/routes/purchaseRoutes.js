@@ -10,6 +10,7 @@ import {
   requireAuth,
   requireRole,
 } from "../../middlewares/authMiddleware.js";
+import { downloadPurchaseInvoice } from "../controllers/pdfGenController.js";
 
 const router = express.Router();
 
@@ -20,6 +21,13 @@ router.post(
   requireAuth,
   requireRole("admin", "manager"),
   createPurchase
+);
+
+router.get(
+  "/:id/invoice",
+  requireAuth,
+  requireRole("admin","manager"),
+  downloadPurchaseInvoice
 );
 
 

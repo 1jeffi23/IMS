@@ -5,6 +5,7 @@ import {
 } from "react-icons/vsc";
 
 import { useGetAuditLogsQuery } from "../../services/auditLogApi";
+import Loader from "../loader/Loader";
 
 const AuditLogs = () => {
   const {
@@ -19,9 +20,9 @@ const AuditLogs = () => {
   const [actionFilter, setActionFilter] = useState("all");
   const [moduleFilter, setModuleFilter] = useState("all");
 
-  // ==========================================
+
   // FILTER LOGS
-  // ==========================================
+
 
   const filteredLogs = logs.filter((log) => {
 
@@ -48,9 +49,9 @@ const AuditLogs = () => {
   });
 
 
-  // ==========================================
+
   // FORMAT DATE
-  // ==========================================
+
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString();
@@ -261,9 +262,7 @@ const AuditLogs = () => {
 
       {isLoading ? (
 
-        <div className="flex justify-center py-16 text-sm text-gray-500">
-          Loading audit logs...
-        </div>
+         <Loader text="Loading AuditLogs..." />
 
       ) : (
 

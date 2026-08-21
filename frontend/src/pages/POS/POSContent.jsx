@@ -9,6 +9,7 @@ const POSContent = ({
   cart,
   increaseQuantity,
   decreaseQuantity,
+  updateQuantity,
   removeItem,
 
   customers,
@@ -43,9 +44,8 @@ const POSContent = ({
   return (
     <div className="p-6">
 
-      {/* =====================================
-          HEADER
-      ====================================== */}
+      {/* 
+          HEADER*/}
 
       <div className="mb-6">
 
@@ -241,29 +241,34 @@ const POSContent = ({
 
                       <div className="flex items-center overflow-hidden rounded-lg border">
 
+                        {/* DECREASE */}
                         <button
                           type="button"
-                          onClick={() =>
-                            decreaseQuantity(
-                              item.productId
-                            )
-                          }
+                          onClick={() => decreaseQuantity(item.productId)}
                           className="px-3 py-1.5 hover:bg-gray-100"
                         >
                           −
                         </button>
 
-                        <span className="border-x px-4 py-1.5">
-                          {item.quantity}
-                        </span>
+                        {/* MANUAL QUANTITY */}
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
 
+                            if (value >= 1) {
+                              updateQuantity(item.productId, value);
+                            }
+                          }}
+                          className="w-16 border-x px-2 py-1.5 text-center outline-none focus:bg-blue-50"
+                        />
+
+                        {/* INCREASE */}
                         <button
                           type="button"
-                          onClick={() =>
-                            increaseQuantity(
-                              item.productId
-                            )
-                          }
+                          onClick={() => increaseQuantity(item.productId)}
                           className="px-3 py-1.5 hover:bg-gray-100"
                         >
                           +
@@ -573,8 +578,8 @@ const POSContent = ({
                 {isCreatingSale
                   ? "Processing..."
                   : `Complete Sale — Rs. ${total.toLocaleString(
-                      "en-PK"
-                    )}`}
+                    "en-PK"
+                  )}`}
               </button>
 
             </div>

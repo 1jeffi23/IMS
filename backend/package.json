@@ -29,6 +29,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
+    "pdfkit": "^0.19.1",
     "resend": "^6.18.1"
   },
   "devDependencies": {

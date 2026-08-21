@@ -6,11 +6,16 @@ import { product } from "../models/productModel.js";
 import { customer } from "../models/customerModel.js";
 
 import {
+  and,
+  asc,
   eq,
+  isNull,
+  or,
   sql,
 } from "drizzle-orm";
 
 import { createAuditLog } from "../../utils/auditLogger.js";
+import { productBatch } from "../models/productBatchModel.js";
 
 
 // =====================================================
@@ -18,9 +23,7 @@ import { createAuditLog } from "../../utils/auditLogger.js";
 // =====================================================
 
 export const createSale = async (req, res) => {
-
   try {
-
     const {
       customerId,
       items,
@@ -30,69 +33,45 @@ export const createSale = async (req, res) => {
       amountPaid,
     } = req.body;
 
-
     // =================================================
     // BASIC VALIDATION
     // =================================================
 
-    if (
-      !Array.isArray(items) ||
-      items.length === 0
-    ) {
-
+    if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
-        message:
-          "At least one product is required",
+        message: "At least one product is required",
       });
-
     }
-
 
     if (
       !paymentMethod ||
-      !["cash", "card"].includes(
-        paymentMethod
-      )
+      !["cash", "card"].includes(paymentMethod)
     ) {
-
       return res.status(400).json({
-        message:
-          "Invalid payment method",
+        message: "Invalid payment method",
       });
-
     }
 
-
-    const discountAmount =
-      Number(discount);
-
-    const taxAmount =
-      Number(tax);
-
+    const discountAmount = Number(discount);
+    const taxAmount = Number(tax);
 
     if (
       Number.isNaN(discountAmount) ||
       discountAmount < 0
     ) {
-
       return res.status(400).json({
         message: "Invalid discount",
       });
-
     }
-
 
     if (
       Number.isNaN(taxAmount) ||
       taxAmount < 0
     ) {
-
       return res.status(400).json({
         message: "Invalid tax",
       });
-
     }
-
 
     // =================================================
     // CHECK CUSTOMER
@@ -100,54 +79,35 @@ export const createSale = async (req, res) => {
 
     let selectedCustomerId = null;
 
-
     if (
       customerId !== null &&
       customerId !== undefined &&
       customerId !== ""
     ) {
+      selectedCustomerId = Number(customerId);
 
-      selectedCustomerId =
-        Number(customerId);
-
-
-      if (
-        Number.isNaN(
-          selectedCustomerId
-        )
-      ) {
-
+      if (Number.isNaN(selectedCustomerId)) {
         return res.status(400).json({
-          message:
-            "Invalid customer ID",
+          message: "Invalid customer ID",
         });
-
       }
 
-
-      const [existingCustomer] =
-        await db
-          .select()
-          .from(customer)
-          .where(
-            eq(
-              customer.id,
-              selectedCustomerId
-            )
-          );
-
+      const [existingCustomer] = await db
+        .select()
+        .from(customer)
+        .where(
+          eq(
+            customer.id,
+            selectedCustomerId
+          )
+        );
 
       if (!existingCustomer) {
-
         return res.status(404).json({
-          message:
-            "Customer not found",
+          message: "Customer not found",
         });
-
       }
-
     }
-
 
     // =================================================
     // DATABASE TRANSACTION
@@ -155,51 +115,31 @@ export const createSale = async (req, res) => {
 
     const result = await db.transaction(
       async (tx) => {
-
         let subtotal = 0;
 
         const saleItemsData = [];
-
 
         // =============================================
         // PROCESS EACH ITEM
         // =============================================
 
         for (const item of items) {
-
-          const productId =
-            Number(item.productId);
-
-          const quantity =
-            Number(item.quantity);
-
+          const productId = Number(item.productId);
+          const quantity = Number(item.quantity);
 
           // ---------------------------------------------
-          // Validate item
+          // VALIDATE ITEM
           // ---------------------------------------------
 
-          if (
-            Number.isNaN(productId)
-          ) {
-
-            throw new Error(
-              "Invalid product"
-            );
-
+          if (Number.isNaN(productId)) {
+            throw new Error("Invalid product");
           }
 
-
-          if (
-            !quantity ||
-            quantity <= 0
-          ) {
-
+          if (!quantity || quantity <= 0) {
             throw new Error(
               "Quantity must be greater than 0"
             );
-
           }
-
 
           // =============================================
           // FIND PRODUCT
@@ -216,46 +156,80 @@ export const createSale = async (req, res) => {
                 )
               );
 
-
           if (!existingProduct) {
-
             throw new Error(
               "Product not found"
             );
-
           }
 
-
           if (!existingProduct.isActive) {
-
             throw new Error(
               `${existingProduct.name} is inactive`
             );
-
           }
 
+          // =============================================
+          // FIND AVAILABLE BATCHES
+          // =============================================
+          // Only batches:
+          // 1. Belong to this product
+          // 2. Have quantity > 0
+          // 3. Are NOT expired
+          //
+          // Ordered by expiry date so that the batch
+          // expiring first is sold first (FEFO).
+
+          const availableBatches =
+            await tx
+              .select()
+              .from(productBatch)
+              .where(
+                and(
+                  eq(
+                    productBatch.productId,
+                    productId
+                  ),
+
+                  sql`${productBatch.quantity} > 0`,
+
+                  or(
+                    isNull(
+                      productBatch.expiryDate
+                    ),
+
+                    sql`${productBatch.expiryDate} >= CURRENT_DATE`
+                  )
+                )
+              )
+              .orderBy(
+                asc(
+                  productBatch.expiryDate
+                )
+              );
 
           // =============================================
-          // CHECK STOCK
+          // CALCULATE AVAILABLE STOCK
           // =============================================
 
           const availableStock =
-            Number(
-              existingProduct.quantity
+            availableBatches.reduce(
+              (total, batch) =>
+                total +
+                Number(batch.quantity),
+              0
             );
 
+          // =============================================
+          // CHECK AVAILABLE STOCK
+          // =============================================
 
           if (
-            availableStock <
-            quantity
+            availableStock < quantity
           ) {
-
             throw new Error(
               `Insufficient stock for ${existingProduct.name}. Available: ${availableStock}, Requested: ${quantity}`
             );
-
           }
-
 
           // =============================================
           // SELLING PRICE
@@ -266,79 +240,145 @@ export const createSale = async (req, res) => {
               existingProduct.sellingPrice
             );
 
-
-          const itemTotal =
-            unitPrice * quantity;
-
-
-          subtotal += itemTotal;
-
-
           // =============================================
-          // PREPARE SALE ITEM
+          // DISTRIBUTE QUANTITY ACROSS BATCHES
           // =============================================
 
-          saleItemsData.push({
+          let remainingQuantity =
+            quantity;
 
-            productId,
+          for (
+            const batch of availableBatches
+          ) {
+            if (
+              remainingQuantity <= 0
+            ) {
+              break;
+            }
 
-            quantity,
+            const batchQuantity =
+              Number(batch.quantity);
 
-            unitPrice:
-              String(unitPrice),
+            const quantityFromBatch =
+              Math.min(
+                remainingQuantity,
+                batchQuantity
+              );
 
-            totalPrice:
-              String(itemTotal),
+            const itemTotal =
+              unitPrice *
+              quantityFromBatch;
 
-          });
+            subtotal += itemTotal;
 
+            // -----------------------------------------
+            // UPDATE BATCH STOCK
+            // -----------------------------------------
+
+            await tx
+              .update(productBatch)
+              .set({
+                quantity: sql`
+                  ${productBatch.quantity}
+                  - ${quantityFromBatch}
+                `,
+                updatedAt: new Date(),
+              })
+              .where(
+                eq(
+                  productBatch.id,
+                  batch.id
+                )
+              );
+
+            // -----------------------------------------
+            // PREPARE SALE ITEM
+            // -----------------------------------------
+
+            saleItemsData.push({
+              productId,
+
+              batchId:
+                batch.id,
+
+              quantity:
+                quantityFromBatch,
+
+              unitPrice:
+                String(unitPrice),
+
+              totalPrice:
+                String(itemTotal),
+            });
+
+            remainingQuantity -=
+              quantityFromBatch;
+          }
+
+          // =============================================
+          // SYNCHRONIZE PRODUCT STOCK
+          // =============================================
+          //
+          // Product quantity should represent
+          // AVAILABLE (non-expired) stock.
+          //
+          // So instead of trusting the old
+          // product.quantity, calculate it from
+          // available batches.
+
+          const newProductQuantity =
+            availableStock -
+            quantity;
+
+          await tx
+            .update(product)
+            .set({
+              quantity:
+                newProductQuantity,
+            })
+            .where(
+              eq(
+                product.id,
+                productId
+              )
+            );
         }
 
-
-        // =================================================
+        // =============================================
         // CALCULATE TOTAL
-        // =================================================
+        // =============================================
 
         const total =
           subtotal -
           discountAmount +
           taxAmount;
 
-
         if (total < 0) {
-
           throw new Error(
             "Discount cannot be greater than subtotal"
           );
-
         }
-
 
         const paid =
           Number(amountPaid);
-
 
         if (
           Number.isNaN(paid) ||
           paid < total
         ) {
-
           throw new Error(
             "Amount paid is insufficient"
           );
-
         }
 
-
-        // =================================================
+        // =============================================
         // CREATE SALE
-        // =================================================
+        // =============================================
 
         const [newSale] =
           await tx
             .insert(sale)
             .values({
-
               customerId:
                 selectedCustomerId,
 
@@ -358,27 +398,22 @@ export const createSale = async (req, res) => {
 
               amountPaid:
                 String(paid),
-
             })
             .returning();
 
-
-        // =================================================
+        // =============================================
         // CREATE SALE ITEMS
-        // =================================================
+        // =============================================
 
         const itemsWithSaleId =
           saleItemsData.map(
             (item) => ({
-
               ...item,
 
               saleId:
                 newSale.id,
-
             })
           );
-
 
         const newItems =
           await tx
@@ -388,72 +423,36 @@ export const createSale = async (req, res) => {
             )
             .returning();
 
-
-        // =================================================
-        // DECREASE PRODUCT STOCK
-        // =================================================
-
-        for (
-          const item of saleItemsData
-        ) {
-
-          await tx
-            .update(product)
-            .set({
-
-              quantity:
-                sql`${product.quantity} - ${item.quantity}`,
-
-            })
-            .where(
-              eq(
-                product.id,
-                item.productId
-              )
-            );
-
-        }
-
-
         return {
           sale: newSale,
           items: newItems,
         };
-
       }
     );
-
 
     // =================================================
     // AUDIT LOG
     // =================================================
 
     await createAuditLog({
+      userId: req.user.id,
 
-      userId:
-        req.user.id,
+      action: "CREATE",
 
-      action:
-        "CREATE",
-
-      module:
-        "SALE",
+      module: "SALE",
 
       entityId:
         String(result.sale.id),
 
       description:
         `Created sale ${result.sale.id}`,
-
     });
-
 
     // =================================================
     // SUCCESS
     // =================================================
 
     return res.status(201).json({
-
       message:
         "Sale completed successfully",
 
@@ -462,30 +461,21 @@ export const createSale = async (req, res) => {
 
       items:
         result.items,
-
     });
 
-
   } catch (error) {
-
     console.error(
       "Create sale error:",
       error
     );
 
-
     return res.status(400).json({
-
       message:
         error.message ||
         "Failed to complete sale",
-
     });
-
   }
-
 };
-
 
 // =====================================================
 // GET ALL SALES
@@ -586,9 +576,9 @@ export const getSaleById = async (req, res) => {
       Number(req.params.id);
 
 
-    // =================================================
+   
     // VALIDATE SALE ID
-    // =================================================
+   
 
     if (Number.isNaN(saleId)) {
 
@@ -602,9 +592,9 @@ export const getSaleById = async (req, res) => {
     }
 
 
-    // =================================================
+   
     // GET SALE + CUSTOMER
-    // =================================================
+   
 
     const [saleData] = await db
 
@@ -671,9 +661,9 @@ export const getSaleById = async (req, res) => {
       );
 
 
-    // =================================================
+   
     // SALE NOT FOUND
-    // =================================================
+   
 
     if (!saleData) {
 
@@ -687,9 +677,9 @@ export const getSaleById = async (req, res) => {
     }
 
 
-    // =================================================
+   
     // GET SALE ITEMS + PRODUCT
-    // =================================================
+   
 
     const items = await db
 
@@ -744,9 +734,9 @@ export const getSaleById = async (req, res) => {
       );
 
 
-    // =================================================
+   
     // SUCCESS
-    // =================================================
+   
 
     return res.status(200).json({
 

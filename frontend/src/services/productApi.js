@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { invalidateInventoryCache } from "./InventoryCache";
 
 export const productApi = createApi({
   reducerPath: "productApi",
@@ -37,6 +38,16 @@ export const productApi = createApi({
       }),
 
       invalidatesTags: ["Product"],
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+    try {
+      await queryFulfilled;
+
+      invalidateInventoryCache(dispatch);
+    } catch (error) {
+      // Purchase failed — don't refresh inventory
+    }
+  },
     }),
 
     // UPDATE

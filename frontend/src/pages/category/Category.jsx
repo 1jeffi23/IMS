@@ -7,11 +7,13 @@ import {
 
 import CategoryForm from "./CategoryForm";
 import CategoryTable from "./CategoryTable";
+import ErrorState from "../loader/ErrorState";
+import Loader from "../loader/Loader";
 
 const Category = () => {
-  // ==========================================
+
   // DATA
-  // ==========================================
+
 
   const {
     data,
@@ -28,9 +30,9 @@ const Category = () => {
 
   const categories = data?.categories || [];
 
-  // ==========================================
+
   // STATE
-  // ==========================================
+
 
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -40,9 +42,9 @@ const Category = () => {
 
   const [deactivatingId, setDeactivatingId] = useState(null);
 
-  // ==========================================
+
   // SUMMARY
-  // ==========================================
+
 
   const totalCategories = categories.length;
 
@@ -54,27 +56,27 @@ const Category = () => {
     (category) => !category.isActive
   ).length;
 
-  // ==========================================
+
   // ADD
-  // ==========================================
+
 
   const handleAdd = () => {
     setEditingCategory(null);
     setShowForm(true);
   };
 
-  // ==========================================
+
   // EDIT
-  // ==========================================
+
 
   const handleEdit = (category) => {
     setEditingCategory(category);
     setShowForm(true);
   };
 
-  // ==========================================
+
   // DEACTIVATE
-  // ==========================================
+
 
   const handleDeactivate = async (id) => {
     const confirmed = window.confirm(
@@ -102,9 +104,9 @@ const Category = () => {
     }
   };
 
-  // ==========================================
+
   // FILTER
-  // ==========================================
+
 
   const filteredCategories = categories.filter(
     (category) => {
@@ -137,97 +139,40 @@ const Category = () => {
     }
   );
 
-  // ==========================================
+
   // LOADING
-  // ==========================================
+
 
   if (isLoading) {
-    return (
-      <div className="p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white border rounded-xl p-10 text-center">
-            <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
-
-            <p className="text-sm text-gray-500 mt-4">
-              Loading categories...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader text="Loading Categories..." />;
   }
 
-  // ==========================================
+
   // ERROR
-  // ==========================================
+
 
   if (isError) {
     return (
-      <div className="p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white border border-red-200 rounded-xl p-10 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-red-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                />
-
-                <line
-                  x1="12"
-                  y1="8"
-                  x2="12"
-                  y2="12"
-                />
-
-                <line
-                  x1="12"
-                  y1="16"
-                  x2="12.01"
-                  y2="16"
-                />
-              </svg>
-            </div>
-
-            <h2 className="mt-4 font-semibold text-gray-800">
-              Failed to load categories
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {error?.data?.message ||
-                "Something went wrong."}
-            </p>
-
-            <button
-              onClick={refetch}
-              className="mt-5 bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    <ErrorState
+      title="Failed to load categories"
+      message={
+        error?.data?.message ||
+        "Something went wrong while fetching categories."
+      }
+    />
+  );
   }
 
-  // ==========================================
+
   // UI
-  // ==========================================
 
   return (
     <div className="p-6 bg-gray-50 min-h-full">
       <div className="max-w-8xl mx-auto space-y-6">
 
-        {/* ======================================
+        {/* 
             HEADER
-        ======================================= */}
+        = */}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -252,9 +197,9 @@ const Category = () => {
           </button>
         </div>
 
-        {/* ======================================
+        {/* 
             SUMMARY CARDS
-        ======================================= */}
+        = */}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
@@ -362,9 +307,9 @@ const Category = () => {
           </div>
         </div>
 
-        {/* ======================================
+        {/* 
             TABLE + SEARCH
-        ======================================= */}
+        = */}
 
         <CategoryTable
           categories={categories}
@@ -380,9 +325,9 @@ const Category = () => {
         />
       </div>
 
-      {/* ======================================
+      {/* 
           FORM
-      ======================================= */}
+      = */}
 
       {showForm && (
         <CategoryForm

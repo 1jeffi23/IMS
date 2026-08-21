@@ -8,6 +8,7 @@ import {
 
 import { sale } from "./saleModel.js";
 import { product } from "./productModel.js";
+import { productBatch } from "./productBatchModel.js";
 
 
 export const saleItem = pgTable(
@@ -27,6 +28,10 @@ export const saleItem = pgTable(
     productId: integer("product_id")
       .notNull()
       .references(() => product.id),
+
+    batchId: integer("batch_id")
+      .notNull()
+      .references(() => productBatch.id),
 
 
     quantity: integer("quantity")

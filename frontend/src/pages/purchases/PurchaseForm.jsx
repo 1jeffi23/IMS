@@ -37,9 +37,9 @@ const emptyNewProduct = {
 
 const PurchaseForm = ({ onClose }) => {
 
-  // ==========================================
+
   // PURCHASE DATA
-  // ==========================================
+
 
   const [formData, setFormData] = useState({
     supplierId: "",
@@ -53,9 +53,9 @@ const PurchaseForm = ({ onClose }) => {
   ]);
 
 
-  // ==========================================
+
   // NEW PRODUCT DATA
-  // ==========================================
+
 
   const [newProductIndex, setNewProductIndex] =
     useState(null);
@@ -67,9 +67,9 @@ const PurchaseForm = ({ onClose }) => {
     });
 
 
-  // ==========================================
+
   // QUERIES
-  // ==========================================
+
 
   const {
     data: productData,
@@ -77,12 +77,12 @@ const PurchaseForm = ({ onClose }) => {
   } = useGetProductsQuery();
 
   const {
-      data: categoryData,
-      isLoading: categoriesLoading,
-    } = useGetCategoriesQuery();
-  
-    const categories = categoryData?.categories || [];
-  
+    data: categoryData,
+    isLoading: categoriesLoading,
+  } = useGetCategoriesQuery();
+
+  const categories = categoryData?.categories || [];
+
 
 
   const {
@@ -99,9 +99,9 @@ const PurchaseForm = ({ onClose }) => {
     supplierData?.suppliers || [];
 
 
-  // ==========================================
+
   // MUTATIONS
-  // ==========================================
+
 
   const [
     createPurchase,
@@ -119,9 +119,9 @@ const PurchaseForm = ({ onClose }) => {
   ] = useCreateProductMutation();
 
 
-  // ==========================================
+
   // PURCHASE CHANGE
-  // ==========================================
+
 
   const handlePurchaseChange = (e) => {
 
@@ -137,7 +137,7 @@ const PurchaseForm = ({ onClose }) => {
 
   };
 
-  
+
   // Handle change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -153,9 +153,9 @@ const PurchaseForm = ({ onClose }) => {
 
 
 
-  // ==========================================
+
   // ITEM CHANGE
-  // ==========================================
+
 
   const handleItemChange = (
     index,
@@ -179,9 +179,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // PRODUCT SELECT
-  // ==========================================
+
 
   const handleProductSelect = (
     index,
@@ -217,9 +217,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // NEW PRODUCT CHANGE
-  // ==========================================
+
 
   const handleNewProductChange = (e) => {
 
@@ -236,9 +236,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // ADD ITEM
-  // ==========================================
+
 
   const addItem = () => {
 
@@ -250,9 +250,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // REMOVE ITEM
-  // ==========================================
+
 
   const removeItem = (index) => {
 
@@ -274,9 +274,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // GET PRODUCT
-  // ==========================================
+
 
   const getProduct = (productId) => {
 
@@ -289,9 +289,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // ITEM TOTAL
-  // ==========================================
+
 
   const getItemTotal = (item) => {
 
@@ -303,9 +303,9 @@ const PurchaseForm = ({ onClose }) => {
   };
 
 
-  // ==========================================
+
   // GRAND TOTAL
-  // ==========================================
+
 
   const grandTotal =
     items.reduce(
@@ -315,9 +315,9 @@ const PurchaseForm = ({ onClose }) => {
     );
 
 
-  // ==========================================
+
   // SUBMIT
-  // ==========================================
+
 
   const handleSubmit = async (e) => {
 
@@ -356,9 +356,9 @@ const PurchaseForm = ({ onClose }) => {
         const item = items[index];
 
 
-        // ======================================
+        //
         // NEW PRODUCT
-        // ======================================
+        //
 
         if (
           newProductIndex === index
@@ -446,9 +446,9 @@ const PurchaseForm = ({ onClose }) => {
         }
 
 
-        // ======================================
+        //
         // EXISTING PRODUCT
-        // ======================================
+        //
 
         if (!item.productId) {
           alert(
@@ -519,9 +519,9 @@ const PurchaseForm = ({ onClose }) => {
       }
 
 
-      // ======================================
+      //
       // CREATE PURCHASE
-      // ======================================
+      //
 
       await createPurchase({
 
@@ -573,9 +573,9 @@ const PurchaseForm = ({ onClose }) => {
 
       <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
 
-        {/* ======================================
+        {/*
             HEADER
-        ====================================== */}
+        */}
 
         <div className="flex justify-between items-center p-6 border-b">
 
@@ -608,9 +608,9 @@ const PurchaseForm = ({ onClose }) => {
           className="p-6"
         >
 
-          {/* ======================================
+          {/*
               PURCHASE INFO
-          ====================================== */}
+          */}
 
           <div className="border rounded-xl p-5 mb-6">
 
@@ -708,9 +708,9 @@ const PurchaseForm = ({ onClose }) => {
           </div>
 
 
-          {/* ======================================
+          {/*
               ITEMS
-          ====================================== */}
+          */}
 
           <div className="border rounded-xl p-5">
 
@@ -863,7 +863,7 @@ const PurchaseForm = ({ onClose }) => {
                             newProductIndex === index
                               ? newProduct.unit
                               : selectedProduct?.unit ||
-                                "-"
+                              "-"
                           }
                           readOnly={
                             newProductIndex !== index
@@ -871,12 +871,12 @@ const PurchaseForm = ({ onClose }) => {
                           onChange={
                             newProductIndex === index
                               ? (e) =>
-                                  setNewProduct(
-                                    (prev) => ({
-                                      ...prev,
-                                      unit: e.target.value,
-                                    })
-                                  )
+                                setNewProduct(
+                                  (prev) => ({
+                                    ...prev,
+                                    unit: e.target.value,
+                                  })
+                                )
                               : undefined
                           }
                           className="w-full border rounded-lg px-3 py-2 bg-white"
@@ -941,7 +941,7 @@ const PurchaseForm = ({ onClose }) => {
                               name="name"
                               value={newProduct.name}
                               onChange={handleNewProductChange}
-                              placeholder="e.g. Panadol 500mg"
+                              placeholder="e.g. CocaCola 500ml"
                               className="w-full border rounded-lg px-3 py-2 bg-white"
                             />
 
@@ -961,7 +961,7 @@ const PurchaseForm = ({ onClose }) => {
                               name="sku"
                               value={newProduct.sku}
                               onChange={handleNewProductChange}
-                              placeholder="e.g. PAN-500"
+                              placeholder="e.g. COC-500"
                               className="w-full border rounded-lg px-3 py-2 bg-white"
                             />
 
@@ -976,31 +976,31 @@ const PurchaseForm = ({ onClose }) => {
                               Category *
                             </label>
 
-                           <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              required
-              disabled={categoriesLoading}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">
-                Select category
-              </option>
+                            <select
+                              name="categoryId"
+                              value={newProduct.categoryId}
+                              onChange={handleNewProductChange}
+                              required
+                              disabled={categoriesLoading}
+                              className="w-full border rounded px-3 py-2"
+                            >
+                              <option value="">
+                                Select category
+                              </option>
 
-              {categories
-                .filter(
-                  (category) => category.isActive
-                )
-                .map((category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
-                    {category.name}
-                  </option>
-                ))}
-            </select>
+                              {categories
+                                .filter(
+                                  (category) => category.isActive
+                                )
+                                .map((category) => (
+                                  <option
+                                    key={category.id}
+                                    value={category.id}
+                                  >
+                                    {category.name}
+                                  </option>
+                                ))}
+                            </select>
 
                             <p className="text-xs text-gray-500 mt-1">
                               Category is required by the product model.
@@ -1232,9 +1232,9 @@ const PurchaseForm = ({ onClose }) => {
             </div>
 
 
-            {/* ======================================
+            {/*
                 GRAND TOTAL
-            ====================================== */}
+            */}
 
             <div className="flex justify-end mt-6">
 
@@ -1262,9 +1262,9 @@ const PurchaseForm = ({ onClose }) => {
           </div>
 
 
-          {/* ======================================
+          {/*
               BUTTONS
-          ====================================== */}
+          */}
 
           <div className="flex justify-end gap-3 mt-6">
 

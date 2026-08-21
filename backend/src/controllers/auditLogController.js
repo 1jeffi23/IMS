@@ -3,9 +3,8 @@ import { auditLog } from "../models/auditLogModel.js";
 import { user } from "../models/authModel.js";
 import { eq, desc } from "drizzle-orm";
 
-// ==========================================
+
 // GET ALL AUDIT LOGS
-// ==========================================
 
 export const getAuditLogs = async (req, res) => {
   try {
@@ -36,9 +35,9 @@ export const getAuditLogs = async (req, res) => {
 };
 
 
-// ==========================================
+
 // GET AUDIT LOGS OF SPECIFIC USER
-// ==========================================
+
 
 export const getUserAuditLogs = async (req, res) => {
   try {

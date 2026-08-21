@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { invalidateInventoryCache } from "./InventoryCache";
 
 
 export const saleApi = createApi({
@@ -21,9 +22,9 @@ export const saleApi = createApi({
 
   endpoints: (builder) => ({
 
-    // ==========================================
+   
     // GET SALES
-    // ==========================================
+   
 
     getSales: builder.query({
 
@@ -37,34 +38,29 @@ export const saleApi = createApi({
     }),
 
 
-    // ==========================================
+    
     // GET SALE BY ID
-    // ==========================================
+ 
 
     getSaleById: builder.query({
 
       query: (id) =>
         `/sales/${id}`,
 
-      providesTags: (
-        result,
-        error,
-        id
-      ) => [
+      providesTags: (result,error,id) => [
 
-        {
-          type: "Sale",
-          id,
-        },
+          {
+            type: "Sale",
+            id,
+          },
 
-      ],
+        ],
 
     }),
 
-
-    // ==========================================
+   
     // CREATE SALE
-    // ==========================================
+   
 
     createSale: builder.mutation({
 
@@ -82,6 +78,16 @@ export const saleApi = createApi({
         "Sale",
         "Product",
       ],
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+
+          invalidateInventoryCache(dispatch);
+        } catch (error) {
+          // Sale failed — don't refresh inventory
+        }
+      },
 
     }),
 
@@ -103,5 +109,6 @@ export const {
   useLazyGetSaleByIdQuery,
 
   useCreateSaleMutation,
+
 
 } = saleApi;

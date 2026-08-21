@@ -32,7 +32,17 @@ export const purchaseApi = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Purchase", "Product", "ProductBatch"],
+      invalidatesTags: ["Purchase", "Product", "ProductBatch"], 
+       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+    try {
+      await queryFulfilled;
+
+      invalidateInventoryCache(dispatch);
+    } catch (error) {
+      // Purchase failed — don't refresh inventory
+    }
+  },
+      
     }),
   }),
 });

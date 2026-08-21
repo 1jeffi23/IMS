@@ -29,9 +29,9 @@ import {
 import { createAuditLog } from "../../utils/auditLogger.js";
 
 
-// ==========================================
+
 // CREATE PURCHASE
-// ==========================================
+
 
 export const createPurchase = async (req, res) => {
   try {
@@ -44,9 +44,9 @@ export const createPurchase = async (req, res) => {
     } = req.body;
 
 
-    // ==========================================
+    
     // BASIC VALIDATION
-    // ==========================================
+    
 
     if (!supplierId) {
       return res.status(400).json({
@@ -73,9 +73,9 @@ export const createPurchase = async (req, res) => {
     }
 
 
-    // ==========================================
+    
     // CHECK SUPPLIER
-    // ==========================================
+    
 
     const [existingSupplier] = await db
       .select()
@@ -101,9 +101,9 @@ export const createPurchase = async (req, res) => {
     }
 
 
-    // ==========================================
+    
     // DATABASE TRANSACTION
-    // ==========================================
+    
 
     const result = await db.transaction(
       async (tx) => {
@@ -398,9 +398,9 @@ export const createPurchase = async (req, res) => {
     );
 
 
-    // ==========================================
+    
     // AUDIT LOG
-    // ==========================================
+    
 
     await createAuditLog({
       userId: req.user.id,
@@ -413,9 +413,9 @@ export const createPurchase = async (req, res) => {
     });
 
 
-    // ==========================================
+    
     // RESPONSE
-    // ==========================================
+    
 
     return res.status(201).json({
 
@@ -450,10 +450,10 @@ export const createPurchase = async (req, res) => {
 };
 
 
-// ==========================================
+
 // GET ALL PURCHASES
 // NO AUDIT LOG
-// ==========================================
+
 
 export const getPurchases = async (req, res) => {
   try {
@@ -511,10 +511,10 @@ export const getPurchases = async (req, res) => {
 };
 
 
-// ==========================================
+
 // GET PURCHASE BY ID
 // NO AUDIT LOG
-// ==========================================
+
 
 export const getPurchaseById = async (
   req,

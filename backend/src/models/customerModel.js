@@ -18,7 +18,7 @@ export const customer = pgTable("customer", {
 
   email: varchar("email", {
     length: 255,
-  }),
+  }).unique(),
 
   createdAt: timestamp("created_at")
     .defaultNow()

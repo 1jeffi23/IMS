@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { invalidateInventoryCache } from "./InventoryCache";
 
 export const productBatchApi = createApi({
   reducerPath: "productBatchApi",
@@ -34,6 +35,15 @@ export const productBatchApi = createApi({
         body: data,
       }),
       invalidatesTags: ["ProductBatch", "Product"],
+       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+    try {
+      await queryFulfilled;
+
+      invalidateInventoryCache(dispatch);
+    } catch (error) {
+      // Batch creation failed
+    }
+  },
     }),
 
     // UPDATE BATCH
@@ -44,6 +54,15 @@ export const productBatchApi = createApi({
         body: data,
       }),
       invalidatesTags: ["ProductBatch", "Product"],
+       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+    try {
+      await queryFulfilled;
+
+      invalidateInventoryCache(dispatch);
+    } catch (error) {
+      // Batch update failed
+    }
+  },
     }),
 
     // DELETE BATCH

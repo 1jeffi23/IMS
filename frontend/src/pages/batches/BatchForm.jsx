@@ -38,9 +38,7 @@ const BatchForm = ({ batch, onClose }) => {
   ] = useUpdateProductBatchMutation();
 
 
-  // ==========================================
   // Fill form when editing
-  // ==========================================
 
   useEffect(() => {
 
@@ -73,10 +71,8 @@ const BatchForm = ({ batch, onClose }) => {
 
   }, [batch]);
 
-
-  // ==========================================
   // Handle change
-  // ==========================================
+
 
   const handleChange = (e) => {
 
@@ -90,9 +86,7 @@ const BatchForm = ({ batch, onClose }) => {
   };
 
 
-  // ==========================================
   // Submit
-  // ==========================================
 
   const handleSubmit = async (e) => {
 

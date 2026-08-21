@@ -5,6 +5,8 @@ import {
 } from "../../services/customerApi";
 
 import CustomerForm from "./CustomerForm";
+import Loader from "../loader/Loader";
+import ErrorState from "../loader/ErrorState";
 
 const Customers = () => {
 
@@ -13,7 +15,6 @@ const Customers = () => {
     isLoading,
     isError,
     error,
-    refetch,
   } = useGetCustomersQuery();
 
   const [
@@ -28,9 +29,9 @@ const Customers = () => {
     data?.customers || [];
 
 
-  // ==========================================
+  //====
   // SEARCH
-  // ==========================================
+  //====
 
   const filteredCustomers =
     customers.filter((customer) => {
@@ -56,86 +57,34 @@ const Customers = () => {
     });
 
 
-  // ==========================================
+  //====
   // SUMMARY
-  // ==========================================
+  //====
 
   const totalCustomers =
     customers.length;
 
 
-  // ==========================================
+  //====
   // LOADING
-  // ==========================================
+  //====
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-
-          <div className="h-8 w-40 bg-gray-200 rounded" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-28 bg-gray-200 rounded-xl"
-              />
-            ))}
-
-          </div>
-
-          <div className="h-64 bg-gray-200 rounded-xl" />
-
-        </div>
-      </div>
-    );
+    return <Loader text="Loading Customers..." />;
   }
 
-
-  // ==========================================
   // ERROR
-  // ==========================================
 
   if (isError) {
-    return (
-      <div className="p-6">
-
-        <div className="max-w-7xl mx-auto">
-
-          <div className="border border-red-200 bg-white rounded-xl p-8 text-center">
-
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-
-              <span className="text-red-500 text-xl">
-                !
-              </span>
-
-            </div>
-
-            <h2 className="mt-4 font-semibold text-gray-800">
-              Failed to load customers
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {error?.data?.message ||
-                "Something went wrong while fetching customers."}
-            </p>
-
-            <button
-              onClick={refetch}
-              className="mt-5 px-4 py-2 rounded-lg bg-black text-white text-sm hover:bg-gray-800"
-            >
-              Try Again
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-    );
+     return (
+        <ErrorState
+          title="Failed to load customers"
+          message={
+            error?.data?.message ||
+            "Something went wrong while fetching customers."
+          }
+        />
+      );
   }
 
 
@@ -145,9 +94,9 @@ const Customers = () => {
       <div className="max-w-8xl mx-auto">
 
 
-        {/* ======================================
+        {/*
             HEADER
-        ======================================= */}
+        */}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
 
@@ -174,9 +123,9 @@ const Customers = () => {
         </div>
 
 
-        {/* ======================================
+        {/*
             SUMMARY
-        ======================================= */}
+       */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
@@ -286,9 +235,9 @@ const Customers = () => {
         </div>
 
 
-        {/* ======================================
+        {/*
             SEARCH
-        ======================================= */}
+       */}
 
         <div className="bg-white border rounded-xl p-4 mb-5">
 
@@ -339,9 +288,9 @@ const Customers = () => {
         </div>
 
 
-        {/* ======================================
+        {/*
             TABLE
-        ======================================= */}
+        */}
 
         <div className="bg-white border rounded-xl overflow-hidden">
 
@@ -573,9 +522,9 @@ const Customers = () => {
       </div>
 
 
-      {/* ======================================
+      {/*
           CUSTOMER FORM
-      ======================================= */}
+      */}
 
       {showForm && (
         <CustomerForm

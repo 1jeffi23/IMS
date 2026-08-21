@@ -47,9 +47,9 @@ export const updateUserRole = async (req, res) => {
     const userId = req.params.id;
     const { role } = req.body;
 
-    // ==========================================
+  
     // VALIDATION
-    // ==========================================
+  
 
     if (!["admin", "manager", "cashier"].includes(role)) {
       return res.status(400).json({
@@ -57,9 +57,9 @@ export const updateUserRole = async (req, res) => {
       });
     }
 
-    // ==========================================
+  
     // FIND USER
-    // ==========================================
+  
 
     const [existingUser] = await db
       .select()
@@ -72,9 +72,9 @@ export const updateUserRole = async (req, res) => {
       });
     }
 
-    // ==========================================
+  
     // NO CHANGE
-    // ==========================================
+  
 
     if (existingUser.role === role) {
       return res.status(400).json({
@@ -84,9 +84,9 @@ export const updateUserRole = async (req, res) => {
 
     const oldRole = existingUser.role;
 
-    // ==========================================
+  
     // UPDATE ROLE
-    // ==========================================
+  
 
     const [updatedUser] = await db
       .update(user)
@@ -96,9 +96,9 @@ export const updateUserRole = async (req, res) => {
       .where(eq(user.id, userId))
       .returning();
 
-    // ==========================================
+  
     // AUDIT LOG
-    // ==========================================
+  
 
     await createAuditLog({
       userId: req.user.id,
@@ -109,9 +109,9 @@ export const updateUserRole = async (req, res) => {
         `Changed role of ${existingUser.name} from ${oldRole} to ${role}`,
     });
 
-    // ==========================================
+  
     // RESPONSE
-    // ==========================================
+  
 
     return res.status(200).json({
       message: "User role updated successfully",

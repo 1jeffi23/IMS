@@ -20,6 +20,7 @@ import ProfilePopup from "./ProfilePopup";
 const Sidebar = () => {
   const [open, setOpen] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  
 
   const navigate = useNavigate();
 
@@ -30,10 +31,7 @@ const Sidebar = () => {
   } = useContext(AuthContext);
 
 
-  // ==========================================
   // MENU ITEMS
-  // ==========================================
-
   const menuItems = [
 
     {
@@ -100,10 +98,7 @@ const Sidebar = () => {
     },
 
 
-    // ==========================================
     // ADMIN ONLY
-    // ==========================================
-
     {
       icon: <VscAccount size={21} />,
       label: "Users",
@@ -121,18 +116,14 @@ const Sidebar = () => {
   ];
 
 
-  // ==========================================
-  // FILTER MENU BY ROLE
-  // ==========================================
 
+  // FILTER MENU BY ROLE
   const visibleMenuItems = menuItems.filter((item) => {
     return item.roles.includes(user?.role);
   });
 
 
-  // ==========================================
   // LOGOUT
-  // ==========================================
 
   const handleLogout = async () => {
     try {
@@ -144,9 +135,9 @@ const Sidebar = () => {
   };
 
 
-  // ==========================================
+  //====
   // USER INITIAL
-  // ==========================================
+  //====
 
   const userInitial =
     user?.name?.charAt(0)?.toUpperCase() || "U";
@@ -169,9 +160,9 @@ const Sidebar = () => {
         `}
       >
 
-        {/* ======================================
+        {/*
             TOP SECTION
-        ======================================= */}
+       = */}
 
         <div>
 
@@ -357,9 +348,9 @@ const Sidebar = () => {
         </div>
 
 
-        {/* ======================================
+        {/*
             BOTTOM SECTION
-        ======================================= */}
+       = */}
 
         <div className="border-t border-gray-200 p-3">
 
@@ -486,9 +477,9 @@ const Sidebar = () => {
       </aside>
 
 
-      {/* ==========================================
+      {/*====
           PROFILE POPUP
-      ========================================== */}
+     ==== */}
 
       {profileOpen && (
         <ProfilePopup

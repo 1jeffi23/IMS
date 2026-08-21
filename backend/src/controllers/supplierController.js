@@ -11,9 +11,9 @@ import {
 import { createAuditLog } from "../../utils/auditLogger.js";
 
 
-// =====================================================
+
 // CREATE SUPPLIER
-// =====================================================
+
 
 export const createSupplier = async (req, res) => {
   try {
@@ -69,10 +69,10 @@ export const createSupplier = async (req, res) => {
 };
 
 
-// =====================================================
+
 // GET ALL SUPPLIERS
 // No audit log for GET
-// =====================================================
+
 
 export const getSuppliers = async (req, res) => {
   try {
@@ -95,10 +95,10 @@ export const getSuppliers = async (req, res) => {
 };
 
 
-// =====================================================
+
 // GET SUPPLIER BY ID
 // No audit log for GET
-// =====================================================
+
 
 export const getSupplierById = async (req, res) => {
   try {
@@ -139,9 +139,9 @@ export const getSupplierById = async (req, res) => {
 };
 
 
-// =====================================================
+
 // UPDATE SUPPLIER
-// =====================================================
+
 
 export const updateSupplier = async (req, res) => {
   try {
@@ -211,9 +211,7 @@ export const updateSupplier = async (req, res) => {
       .returning();
 
 
-    // =================================================
     // AUDIT LOG
-    // =================================================
 
     await createAuditLog({
       userId: req.user.id,

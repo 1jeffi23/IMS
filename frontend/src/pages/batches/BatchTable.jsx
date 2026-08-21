@@ -21,6 +21,7 @@ const BatchTable = ({
   handleEdit,
   handleDelete,
   isDeleting,
+  deletingBatchId,
 }) => {
   // Status label
   const getStatusLabel = (status) => {
@@ -205,24 +206,22 @@ const BatchTable = ({
                   return (
                     <tr
                       key={batch.id}
-                      className={`border-b last:border-b-0 transition ${
-                        status === "expired"
+                      className={`border-b last:border-b-0 transition ${status === "expired"
                           ? "bg-red-50/40 hover:bg-red-50"
                           : status === "expiring"
-                          ? "bg-orange-50/20 hover:bg-orange-50/50"
-                          : "hover:bg-gray-50"
-                      }`}
+                            ? "bg-orange-50/20 hover:bg-orange-50/50"
+                            : "hover:bg-gray-50"
+                        }`}
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                              status === "expired"
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center ${status === "expired"
                                 ? "bg-red-100 text-red-600"
                                 : status === "expiring"
-                                ? "bg-orange-100 text-orange-600"
-                                : "bg-blue-50 text-blue-600"
-                            }`}
+                                  ? "bg-orange-100 text-orange-600"
+                                  : "bg-blue-50 text-blue-600"
+                              }`}
                           >
                             <Package size={17} />
                           </div>
@@ -273,13 +272,12 @@ const BatchTable = ({
                       </td>
 
                       <td
-                        className={`px-5 py-4 text-sm ${
-                          status === "expired"
+                        className={`px-5 py-4 text-sm ${status === "expired"
                             ? "text-red-600 font-semibold"
                             : status === "expiring"
-                            ? "text-orange-600 font-semibold"
-                            : "text-gray-600"
-                        }`}
+                              ? "text-orange-600 font-semibold"
+                              : "text-gray-600"
+                          }`}
                       >
                         {batch.expiryDate || "No expiry"}
                       </td>
@@ -332,7 +330,8 @@ const BatchTable = ({
 
                           <button
                             type="button"
-                            disabled={isDeleting}
+                            disabled={isDeleting &&
+                              deletingBatchId === batch.id}
                             onClick={() =>
                               handleDelete(batch.id)
                             }

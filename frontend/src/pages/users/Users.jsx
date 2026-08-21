@@ -16,11 +16,13 @@ import {
 } from "react-icons/vsc";
 
 import UserTable from "./UserTable";
+import ErrorState from "../loader/ErrorState";
+import Loader from "../loader/Loader";
 
 const Users = () => {
-  // ==========================================
+  
   // USERS
-  // ==========================================
+  
 
   const {
     data,
@@ -32,9 +34,9 @@ const Users = () => {
   const [updateUserRole] =
     useUpdateUserRoleMutation();
 
-  // ==========================================
+  
   // STATE
-  // ==========================================
+  
 
   const [selectedRoles, setSelectedRoles] =
     useState({});
@@ -48,9 +50,9 @@ const Users = () => {
 
   const users = data?.users || [];
 
-  // ==========================================
+  
   // USER HISTORY
-  // ==========================================
+  
 
   const {
     data: historyData,
@@ -69,9 +71,9 @@ const Users = () => {
       historyData?.auditLogs ||
       [];
 
-  // ==========================================
+  
   // ROLE CHANGE
-  // ==========================================
+  
 
   const handleRoleChange = (
     userId,
@@ -83,9 +85,9 @@ const Users = () => {
     }));
   };
 
-  // ==========================================
+  
   // UPDATE ROLE
-  // ==========================================
+  
 
   const handleUpdateRole = async (user) => {
     const newRole =
@@ -121,9 +123,9 @@ const Users = () => {
     }
   };
 
-  // ==========================================
+  
   // AUDIT ACTION STYLE
-  // ==========================================
+  
 
   const getActionStyle = (action) => {
     const value =
@@ -161,9 +163,9 @@ const Users = () => {
     return "bg-gray-100 text-gray-600";
   };
 
-  // ==========================================
+  
   // FORMAT ACTION
-  // ==========================================
+  
 
   const formatAction = (action) => {
     if (!action) {
@@ -179,60 +181,42 @@ const Users = () => {
       );
   };
 
-  // ==========================================
+  
   // LOADING
-  // ==========================================
+  
 
   if (isLoading) {
-    return (
-      <div className="p-4 sm:p-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-
-          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-gray-800" />
-
-          <p className="text-sm text-gray-500">
-            Loading users...
-          </p>
-
-        </div>
-      </div>
-    );
+    return <Loader text="Loading Users..." />;
   }
 
-  // ==========================================
+  
   // ERROR
-  // ==========================================
+  
 
   if (isError) {
     return (
-      <div className="p-4 sm:p-6">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-
-          <p className="font-medium text-red-700">
-            Failed to fetch users
-          </p>
-
-          <p className="mt-1 text-sm text-red-500">
-            {error?.data?.message ||
-              "Something went wrong."}
-          </p>
-
-        </div>
-      </div>
-    );
+       <ErrorState
+         title="Failed to load users"
+         message={
+           error?.data?.message ||
+           "Something went wrong while fetching users."
+         }
+       />
+     );
+  
   }
 
-  // ==========================================
+  
   // UI
-  // ==========================================
+  
 
   return (
     <>
       <div className="p-4 sm:p-6">
 
-        {/* ======================================
+        {/*
             HEADER
-        ======================================= */}
+       = */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -274,9 +258,9 @@ const Users = () => {
 
         </div>
 
-        {/* ======================================
+        {/*
             USER TABLE
-        ======================================= */}
+       = */}
 
         <UserTable
           users={users}
@@ -289,9 +273,9 @@ const Users = () => {
 
       </div>
 
-      {/* ==========================================
+      {/*
           USER HISTORY MODAL
-      ========================================== */}
+     */}
 
       {selectedUser && (
 

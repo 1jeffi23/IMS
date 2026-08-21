@@ -45,7 +45,7 @@ const UserHistory = () => {
   return (
     <div className="p-6 space-y-6">
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
 
       <div className="flex items-center justify-between">
 
@@ -69,7 +69,7 @@ const UserHistory = () => {
       </div>
 
 
-      {/* ================= SUMMARY ================= */}
+      {/* SUMMARY */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -108,7 +108,7 @@ const UserHistory = () => {
       </div>
 
 
-      {/* ================= HISTORY ================= */}
+      {/* HISTORY */}
 
       <div className="border rounded-lg">
 

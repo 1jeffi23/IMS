@@ -4,9 +4,9 @@ import { category } from "../models/categoryModel.js";
 import { createAuditLog } from "../../utils/auditLogger.js";
 
 
-// =====================================================
+
 // CREATE CATEGORY
-// =====================================================
+
 
 export const createCategory = async (req, res) => {
   try {
@@ -66,10 +66,10 @@ export const createCategory = async (req, res) => {
 };
 
 
-// =====================================================
+
 // GET ALL CATEGORIES
 // NO AUDIT LOG
-// =====================================================
+
 
 export const getCategories = async (req, res) => {
   try {
@@ -92,10 +92,10 @@ export const getCategories = async (req, res) => {
 };
 
 
-// =====================================================
+
 // GET CATEGORY BY ID
 // NO AUDIT LOG
-// =====================================================
+
 
 export const getCategoryById = async (req, res) => {
   try {
@@ -126,9 +126,9 @@ export const getCategoryById = async (req, res) => {
 };
 
 
-// =====================================================
+
 // UPDATE CATEGORY
-// =====================================================
+
 
 export const updateCategory = async (req, res) => {
   try {
@@ -206,9 +206,9 @@ export const updateCategory = async (req, res) => {
 };
 
 
-// =====================================================
+
 // DEACTIVATE CATEGORY
-// =====================================================
+
 
 export const deactivateCategory = async (req, res) => {
   try {

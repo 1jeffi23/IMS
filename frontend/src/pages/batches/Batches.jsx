@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   Plus,
 } from "lucide-react";
+import Loader from "../loader/Loader";
+import ErrorState from "../loader/ErrorState";
 
 const Batches = () => {
   const {
@@ -25,6 +27,9 @@ const Batches = () => {
     deleteProductBatch,
     { isLoading: isDeleting },
   ] = useDeleteProductBatchMutation();
+
+  const [deletingBatchId, setDeletingBatchId] =
+  useState(null);
 
   const [showForm, setShowForm] = useState(false);
   const [editingBatch, setEditingBatch] = useState(null);
@@ -110,96 +115,48 @@ const Batches = () => {
     setShowForm(true);
   };
 
-  // Delete batch
-  const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this batch?"
+ // Delete batch
+const handleDelete = async (id) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this batch?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setDeletingBatchId(id);
+
+    await deleteProductBatch(id).unwrap();
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error?.data?.message ||
+        "Failed to delete batch"
     );
-
-    if (!confirmed) return;
-
-    try {
-      await deleteProductBatch(id).unwrap();
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        error?.data?.message ||
-          "Failed to delete batch"
-      );
-    }
-  };
+  } finally {
+    setDeletingBatchId(null);
+  }
+};
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-7">
-            <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="h-4 w-72 bg-gray-100 rounded mt-2 animate-pulse" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="bg-white border border-gray-200 rounded-2xl p-5"
-              >
-                <div className="h-11 w-11 bg-gray-100 rounded-xl animate-pulse" />
-                <div className="h-4 w-24 bg-gray-100 rounded mt-5 animate-pulse" />
-                <div className="h-7 w-16 bg-gray-200 rounded mt-2 animate-pulse" />
-                <div className="h-3 w-28 bg-gray-100 rounded mt-2 animate-pulse" />
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-white border rounded-2xl p-5 mb-5">
-            <div className="h-11 bg-gray-100 rounded-lg animate-pulse" />
-          </div>
-
-          <div className="bg-white border rounded-2xl overflow-hidden">
-            <div className="h-14 bg-gray-100 animate-pulse" />
-
-            <div className="p-5 space-y-4">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div
-                  key={item}
-                  className="h-12 bg-gray-100 rounded-lg animate-pulse"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Loader text="Loading batches..." />
     );
   }
 
   // Error state
   if (isError) {
     return (
-      <div className="p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white border border-red-200 rounded-2xl p-8 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-              <AlertTriangle
-                size={24}
-                className="text-red-500"
-              />
-            </div>
-
-            <h2 className="mt-4 font-semibold text-gray-800">
-              Failed to load batches
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {error?.data?.message ||
-                "Something went wrong while fetching batches."}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    <ErrorState
+      title="Failed to load batches"
+      message={
+        error?.data?.message ||
+        "Something went wrong while fetching batches."
+      }
+    />
+  );
   }
 
   return (
@@ -358,6 +315,7 @@ const Batches = () => {
           handleEdit={handleEdit}
           handleDelete={handleDelete}
           isDeleting={isDeleting}
+           deletingBatchId={deletingBatchId}
         />
 
         {showForm && (

@@ -15,9 +15,9 @@ const UserTable = ({
   onViewHistory,
 }) => {
 
-  // ==========================================
+  
   // ROLE STYLE
-  // ==========================================
+  
 
   const getRoleStyle = (role) => {
     switch (role) {
@@ -35,9 +35,9 @@ const UserTable = ({
     }
   };
 
-  // ==========================================
+  
   // TABLE
-  // ==========================================
+  
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">

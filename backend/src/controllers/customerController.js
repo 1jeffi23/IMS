@@ -152,11 +152,9 @@ export const getCustomerById = async (
 // =====================================================
 // UPDATE CUSTOMER
 // =====================================================
-
 export const updateCustomer = async (req, res) => {
   try {
-    const customerId =
-      Number(req.params.id);
+    const customerId = Number(req.params.id);
 
     if (Number.isNaN(customerId)) {
       return res.status(400).json({
@@ -171,16 +169,12 @@ export const updateCustomer = async (req, res) => {
     } = req.body;
 
     // Find customer
-    const [existingCustomer] =
-      await db
-        .select()
-        .from(customer)
-        .where(
-          eq(
-            customer.id,
-            customerId
-          )
-        );
+    const [existingCustomer] = await db
+      .select()
+      .from(customer)
+      .where(
+        eq(customer.id, customerId)
+      );
 
     if (!existingCustomer) {
       return res.status(404).json({
@@ -198,12 +192,40 @@ export const updateCustomer = async (req, res) => {
       });
     }
 
-    // Build update object
+  
+    // EMAIL UNIQUE CHECK
+  
+
+    if (email !== undefined && email.trim()) {
+      const normalizedEmail = email
+        .trim()
+        .toLowerCase();
+
+      const [emailExists] = await db
+        .select()
+        .from(customer)
+        .where(
+          and(
+            eq(customer.email, normalizedEmail),
+            ne(customer.id, customerId)
+          )
+        );
+
+      if (emailExists) {
+        return res.status(400).json({
+          message: "Email already exists",
+        });
+      }
+    }
+
+  
+    // BUILD UPDATE OBJECT
+  
+
     const updateData = {};
 
     if (name !== undefined) {
-      updateData.name =
-        name.trim();
+      updateData.name = name.trim();
     }
 
     if (phone !== undefined) {
@@ -213,23 +235,25 @@ export const updateCustomer = async (req, res) => {
 
     if (email !== undefined) {
       updateData.email =
-        email?.trim() || null;
+        email?.trim().toLowerCase() || null;
     }
 
-    // Update customer
-    const [updatedCustomer] =
-      await db
-        .update(customer)
-        .set(updateData)
-        .where(
-          eq(
-            customer.id,
-            customerId
-          )
-        )
-        .returning();
+  
+    // UPDATE CUSTOMER
+  
 
+    const [updatedCustomer] = await db
+      .update(customer)
+      .set(updateData)
+      .where(
+        eq(customer.id, customerId)
+      )
+      .returning();
+
+  
     // AUDIT LOG
+  
+
     await createAuditLog({
       userId: req.user.id,
       action: "UPDATE",

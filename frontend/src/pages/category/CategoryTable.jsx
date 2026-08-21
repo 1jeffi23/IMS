@@ -9,9 +9,8 @@ const CategoryTable = ({
   onDeactivate,
   deactivatingId,
 }) => {
-  // ==========================================
+  
   // CLEAR FILTERS
-  // ==========================================
 
   const handleClear = () => {
     setSearch("");
@@ -20,9 +19,9 @@ const CategoryTable = ({
 
   return (
     <>
-      {/* ======================================
+      {/*
           SEARCH + FILTER
-      ======================================= */}
+     = */}
 
       <div className="bg-white border rounded-xl p-4 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
@@ -105,9 +104,9 @@ const CategoryTable = ({
         </div>
       </div>
 
-      {/* ======================================
+      {/*
           TABLE
-      ======================================= */}
+      */}
 
       <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">

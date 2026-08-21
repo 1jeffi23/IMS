@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
+import Loader from "./loader/Loader";
+import ErrorState from "./loader/ErrorState";
 
 
 const Dashboard = () => {
@@ -24,9 +26,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
 
-  // ==========================================
+  
   // API
-  // ==========================================
+  
 
   const {
     data: productData,
@@ -49,9 +51,9 @@ const Dashboard = () => {
     salesData?.sales || [];
 
 
-  // ==========================================
+  
   // CALCULATIONS
-  // ==========================================
+  
 
   const activeProducts =
     products.filter(
@@ -110,9 +112,9 @@ const Dashboard = () => {
       .slice(0, 5);
 
 
-  // ==========================================
+  
   // PERCENTAGES
-  // ==========================================
+  
 
   const healthyPercentage =
     activeProducts.length
@@ -144,9 +146,9 @@ const Dashboard = () => {
       : 0;
 
 
-  // ==========================================
+  
   // LOADING
-  // ==========================================
+  
 
   const isLoading =
     productsLoading ||
@@ -155,126 +157,31 @@ const Dashboard = () => {
 
   if (isLoading) {
 
-    return (
-
-      <div className="p-4 sm:p-6">
-
-        <div className="max-w-7xl mx-auto">
-
-          {/* HEADER SKELETON */}
-
-          <div className="mb-8">
-
-            <div className="h-8 w-44 bg-gray-200 rounded-lg animate-pulse" />
-
-            <div className="h-4 w-72 bg-gray-100 rounded mt-2 animate-pulse" />
-
-          </div>
-
-
-          {/* STATS SKELETON */}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-
-            {[1, 2, 3, 4].map(
-              (item) => (
-
-                <div
-                  key={item}
-                  className="bg-white border border-gray-200 rounded-2xl p-5"
-                >
-
-                  <div className="h-11 w-11 bg-gray-100 rounded-xl animate-pulse" />
-
-                  <div className="h-4 w-28 bg-gray-100 rounded mt-5 animate-pulse" />
-
-                  <div className="h-7 w-20 bg-gray-200 rounded mt-2 animate-pulse" />
-
-                  <div className="h-3 w-32 bg-gray-100 rounded mt-2 animate-pulse" />
-
-                </div>
-
-              )
-            )}
-
-          </div>
-
-
-          {/* CONTENT SKELETON */}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-
-            <div className="lg:col-span-2 h-80 bg-white border border-gray-200 rounded-2xl animate-pulse" />
-
-            <div className="h-80 bg-white border border-gray-200 rounded-2xl animate-pulse" />
-
-          </div>
-
-        </div>
-
-      </div>
-
-    );
-
+     return <Loader text="Loading..." />;
   }
 
 
-  // ==========================================
+  
   // ERROR
-  // ==========================================
+  
 
   if (productsError || salesError) {
 
-    return (
-
-      <div className="p-4 sm:p-6">
-
-        <div className="max-w-7xl mx-auto">
-
-          <div className="bg-white border border-red-200 rounded-2xl p-10 text-center">
-
-            <div className="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center">
-
-              <AlertTriangle
-                size={26}
-                className="text-red-500"
-              />
-
-            </div>
-
-
-            <h2 className="text-lg font-semibold text-gray-900 mt-4">
-              Unable to load dashboard
-            </h2>
-
-
-            <p className="text-sm text-gray-500 mt-1">
-              There was a problem loading inventory or sales data.
-            </p>
-
-
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="mt-5 px-4 py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
-            >
-              Try Again
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
+   return (
+      <ErrorState
+        title="Failedto load dashboard"
+        message={
+          // error?.data?.message ||
+          "There was a problem while loading inventory or sales data."
+        }
+      />
     );
+
 
   }
 
-
-  // ==========================================
   // STAT CARDS
-  // ==========================================
+  
 
   const stats = [
 
@@ -326,9 +233,9 @@ const Dashboard = () => {
   ];
 
 
-  // ==========================================
+  
   // UI
-  // ==========================================
+  
 
   return (
 
@@ -339,7 +246,7 @@ const Dashboard = () => {
 
         {/* =====================================
             HEADER
-        ====================================== */}
+        */}
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
 
@@ -405,7 +312,7 @@ const Dashboard = () => {
 
         {/* =====================================
             STAT CARDS
-        ====================================== */}
+        */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
@@ -465,7 +372,7 @@ const Dashboard = () => {
 
         {/* =====================================
             RECENT SALES + STOCK OVERVIEW
-        ====================================== */}
+        */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 
@@ -808,9 +715,9 @@ const Dashboard = () => {
         </div>
 
 
-        {/* =====================================
+        {/*
             LOW STOCK PRODUCTS
-        ====================================== */}
+        */}
 
         {lowStockProducts.length > 0 && (
 

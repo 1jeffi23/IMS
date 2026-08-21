@@ -93,9 +93,9 @@ export const createProductBatch = async (req, res) => {
         )
       );
 
-    // =================================================
+  
     // Existing batch
-    // =================================================
+  
 
     if (existingBatch) {
       const [updatedBatch] = await db
@@ -129,9 +129,9 @@ export const createProductBatch = async (req, res) => {
       });
     }
 
-    // =================================================
+  
     // New batch
-    // =================================================
+  
 
     const [newBatch] = await db
       .insert(productBatch)
@@ -277,10 +277,7 @@ export const getProductBatchById = async (req, res) => {
   }
 };
 
-
-// =====================================================
 // UPDATE PRODUCT BATCH
-// =====================================================
 
 export const updateProductBatch = async (req, res) => {
   try {
@@ -419,10 +416,7 @@ export const updateProductBatch = async (req, res) => {
   }
 };
 
-
-// =====================================================
 // DELETE PRODUCT BATCH
-// =====================================================
 
 export const deleteProductBatch = async (req, res) => {
   try {

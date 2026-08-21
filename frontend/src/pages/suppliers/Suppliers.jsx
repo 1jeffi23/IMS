@@ -11,6 +11,8 @@ import {
   Plus,
   X,
 } from "lucide-react";
+import ErrorState from "../loader/ErrorState";
+import Loader from "../loader/Loader";
 
 const Suppliers = () => {
   const {
@@ -92,50 +94,20 @@ const Suppliers = () => {
 
   // Loading
   if (isLoading) {
-    return (
-      <div className="p-4 sm:p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div>
-            <div className="h-8 w-40 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="h-4 w-72 bg-gray-100 rounded mt-2 animate-pulse" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="bg-white border rounded-2xl p-5"
-              >
-                <div className="h-10 w-10 bg-gray-100 rounded-xl animate-pulse" />
-                <div className="h-4 w-28 bg-gray-100 rounded mt-5 animate-pulse" />
-                <div className="h-7 w-16 bg-gray-200 rounded mt-2 animate-pulse" />
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-white border rounded-2xl h-96 animate-pulse" />
-        </div>
-      </div>
-    );
+     return <Loader text="Loading Suppliers..." />;
   }
 
   // Error
   if (isError) {
     return (
-      <div className="p-4 sm:p-6 bg-gray-50 min-h-full">
-        <div className="max-w-7xl mx-auto">
-          <div className="border border-red-200 bg-red-50 rounded-2xl p-5 text-red-600">
-            <p className="font-medium">
-              Failed to load suppliers
-            </p>
-
-            <p className="text-sm mt-1">
-              {error?.data?.message || "Something went wrong"}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+       <ErrorState
+         title="Failed to load suppliers"
+         message={
+           error?.data?.message ||
+           "Something went wrong while fetching suppliers."
+         }
+       />
+     );
   }
 
   return (

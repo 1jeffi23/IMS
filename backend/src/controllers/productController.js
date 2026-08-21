@@ -95,9 +95,9 @@ export const createProduct = async (req, res) => {
       })
       .returning();
 
-    // ==========================================
+   
     // AUDIT LOG
-    // ==========================================
+   
 
     await createAuditLog({
       userId: req.user.id,
@@ -350,9 +350,9 @@ export const updateProduct = async (req, res) => {
       .where(eq(product.id, productId))
       .returning();
 
-    // ==========================================
+   
     // AUDIT LOG
-    // ==========================================
+   
 
     await createAuditLog({
       userId: req.user.id,

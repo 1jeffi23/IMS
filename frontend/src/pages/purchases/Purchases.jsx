@@ -5,23 +5,30 @@ import {
 } from "../../services/purchaseApi";
 
 import PurchaseForm from "./PurchaseForm";
-import PurchaseDetails from "./PurchaseDetails";
+import PurchaseTable from "./PurchaseInvoiceButton";
+
+import ErrorState from "../loader/ErrorState";
+import Loader from "../loader/Loader";
 
 
 const Purchases = () => {
 
-  const [viewingPurchase, setViewingPurchase] =
-    useState(null);
-
   const [showForm, setShowForm] =
     useState(false);
 
+  const [search, setSearch] =
+    useState("");
+
+
+  // GET PURCHASES
 
   const {
     data,
     isLoading,
     isError,
     error,
+    refetch,
+    isFetching,
   } = useGetPurchasesQuery();
 
 
@@ -29,13 +36,7 @@ const Purchases = () => {
     data?.purchases || [];
 
 
-  const [search, setSearch] =
-    useState("");
-
-
-  // ==========================================
-  // SEARCH
-  // ==========================================
+  // FILTER PURCHASES
 
   const filteredPurchases =
     purchases.filter((purchase) => {
@@ -56,9 +57,7 @@ const Purchases = () => {
     });
 
 
-  // ==========================================
   // SUMMARY
-  // ==========================================
 
   const totalPurchases =
     purchases.length;
@@ -73,57 +72,27 @@ const Purchases = () => {
     );
 
 
-  // ==========================================
   // LOADING
-  // ==========================================
 
   if (isLoading) {
 
     return (
-      <div className="p-6">
-
-        <p className="text-gray-500">
-          Loading purchases...
-        </p>
-
-      </div>
+      <Loader text="Loading Purchases..." />
     );
 
   }
 
 
-  // ==========================================
   // ERROR
-  // ==========================================
 
   if (isError) {
 
     return (
-      <div className="p-6">
-
-        <p className="text-red-600">
-          Failed to load purchases:{" "}
-          {error?.data?.message ||
-            "Something went wrong"}
-        </p>
-
-      </div>
-    );
-
-  }
-
-
-  // ==========================================
-  // VIEW DETAILS
-  // ==========================================
-
-  if (viewingPurchase) {
-
-    return (
-      <PurchaseDetails
-        purchaseId={viewingPurchase}
-        onBack={() =>
-          setViewingPurchase(null)
+      <ErrorState
+        title="Failed to load purchases"
+        message={
+          error?.data?.message ||
+          "Something went wrong while fetching purchases."
         }
       />
     );
@@ -135,9 +104,8 @@ const Purchases = () => {
 
     <div className="p-6">
 
-      {/* ======================================
-          HEADER
-      ====================================== */}
+
+      {/* HEADER */}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
 
@@ -164,11 +132,10 @@ const Purchases = () => {
       </div>
 
 
-      {/* ======================================
-          SUMMARY
-      ====================================== */}
+      {/* SUMMARY */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
 
         <div className="border rounded-xl p-5 bg-white">
 
@@ -204,12 +171,11 @@ const Purchases = () => {
 
         </div>
 
+
       </div>
 
 
-      {/* ======================================
-          SEARCH
-      ====================================== */}
+      {/* SEARCH */}
 
       <div className="mb-5">
 
@@ -226,9 +192,7 @@ const Purchases = () => {
       </div>
 
 
-      {/* ======================================
-          RESULT COUNT
-      ====================================== */}
+      {/* RESULT COUNT */}
 
       <p className="text-sm text-gray-500 mb-3">
 
@@ -249,182 +213,16 @@ const Purchases = () => {
       </p>
 
 
-      {/* ======================================
-          TABLE
-      ====================================== */}
+      {/* PURCHASE TABLE */}
 
-      <div className="border rounded-xl overflow-hidden bg-white">
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-200">
-
-            <thead className="bg-gray-50 border-b">
-
-              <tr>
-
-                <th className="text-left p-4 text-sm font-medium text-gray-600">
-                  Invoice
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium text-gray-600">
-                  Supplier
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium text-gray-600">
-                  Purchase Date
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium text-gray-600">
-                  Total Amount
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium text-gray-600">
-                  Created
-                </th>
-
-                <th className="text-right p-4 text-sm font-medium text-gray-600">
-                  Actions
-                </th>
-
-              </tr>
-
-            </thead>
+      <PurchaseTable
+        purchases={filteredPurchases}
+        refetch={refetch}
+        isFetching={isFetching}
+      />
 
 
-            <tbody>
-
-              {filteredPurchases.length === 0 ? (
-
-                <tr>
-
-                  <td
-                    colSpan="6"
-                    className="text-center p-10"
-                  >
-
-                    <p className="text-gray-500">
-                      No purchases found
-                    </p>
-
-                    {search && (
-                      <p className="text-sm text-gray-400 mt-1">
-                        Try changing your search
-                      </p>
-                    )}
-
-                  </td>
-
-                </tr>
-
-              ) : (
-
-                filteredPurchases.map(
-                  (purchase) => (
-
-                    <tr
-                      key={purchase.id}
-                      className="border-t hover:bg-gray-50 transition"
-                    >
-
-                      {/* INVOICE */}
-
-                      <td className="p-4">
-
-                        <p className="font-medium">
-                          {purchase.invoiceNumber}
-                        </p>
-
-                        <p className="text-xs text-gray-400">
-                          Purchase #{purchase.id}
-                        </p>
-
-                      </td>
-
-
-                      {/* SUPPLIER */}
-
-                      <td className="p-4">
-
-                        <p className="font-medium">
-                          {purchase.supplierName || "-"}
-                        </p>
-
-                      </td>
-
-
-                      {/* DATE */}
-
-                      <td className="p-4 text-gray-600">
-                        {purchase.purchaseDate}
-                      </td>
-
-
-                      {/* TOTAL */}
-
-                      <td className="p-4">
-
-                        <span className="font-medium">
-                          Rs.{" "}
-                          {Number(
-                            purchase.totalAmount || 0
-                          ).toLocaleString("en-PK")}
-                        </span>
-
-                      </td>
-
-
-                      {/* CREATED */}
-
-                      <td className="p-4 text-gray-500">
-
-                        {purchase.createdAt
-                          ? new Date(
-                              purchase.createdAt
-                            ).toLocaleDateString(
-                              "en-PK"
-                            )
-                          : "-"}
-
-                      </td>
-
-
-                      {/* ACTION */}
-
-                      <td className="p-4 text-right">
-
-                        <button
-                          onClick={() =>
-                            setViewingPurchase(
-                              purchase.id
-                            )
-                          }
-                          className="border px-3 py-1.5 rounded-lg hover:bg-gray-100"
-                        >
-                          View
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )
-
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
-
-      {/* ======================================
-          PURCHASE FORM
-      ====================================== */}
+      {/* PURCHASE FORM */}
 
       {showForm && (
 
@@ -436,9 +234,11 @@ const Purchases = () => {
 
       )}
 
+
     </div>
 
   );
+
 };
 
 

@@ -14,11 +14,12 @@ import {
 
 import CustomerForm from "./CustomerForm";
 import POSContent from "./POSContent";
+import { toast } from "sonner";
 
 const POS = () => {
-  // ==========================================
+
   // STATE
-  // ==========================================
+
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState([]);
@@ -30,9 +31,9 @@ const POS = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [amountPaid, setAmountPaid] = useState("");
 
-  // ==========================================
+
   // API
-  // ==========================================
+
 
   const {
     data: productData,
@@ -57,9 +58,9 @@ const POS = () => {
   const customers =
     customerData?.customers || [];
 
-  // ==========================================
+
   // SEARCH PRODUCTS
-  // ==========================================
+
 
   const filteredProducts = useMemo(() => {
     const text = search
@@ -86,22 +87,19 @@ const POS = () => {
       .slice(0, 8);
   }, [products, search]);
 
-  // ==========================================
+
   // ADD PRODUCT
-  // ==========================================
 
   const handleAddProduct = (product) => {
     const existing = cart.find(
-      (item) =>
-        item.productId === product.id
+      (item) => item.productId === product.id
     );
 
     if (existing) {
       if (
-        existing.quantity >=
-        Number(product.quantity)
+        existing.quantity >= Number(product.quantity)
       ) {
-        alert(
+        toast.error(
           `Only ${product.quantity} units available`
         );
         return;
@@ -111,32 +109,32 @@ const POS = () => {
         cart.map((item) =>
           item.productId === product.id
             ? {
-                ...item,
-                quantity:
-                  item.quantity + 1,
-                totalPrice:
-                  (item.quantity + 1) *
-                  Number(item.unitPrice),
-              }
+              ...item,
+              quantity: item.quantity + 1,
+              totalPrice:
+                (item.quantity + 1) *
+                Number(item.unitPrice),
+            }
             : item
         )
       );
     } else {
+      if (Number(product.quantity) <= 0) {
+        toast.error("Product is out of stock");
+        return;
+      }
+
       setCart([
         ...cart,
         {
           productId: product.id,
           name: product.name,
           sku: product.sku,
-          unit:
-            product.unit || "piece",
-          unitPrice:
-            Number(product.sellingPrice),
+          unit: product.unit || "piece",
+          unitPrice: Number(product.sellingPrice),
           quantity: 1,
-          totalPrice:
-            Number(product.sellingPrice),
-          availableStock:
-            Number(product.quantity),
+          totalPrice: Number(product.sellingPrice),
+          availableStock: Number(product.quantity),
         },
       ]);
     }
@@ -144,9 +142,9 @@ const POS = () => {
     setSearch("");
   };
 
-  // ==========================================
+
   // INCREASE QUANTITY
-  // ==========================================
+
 
   const increaseQuantity = (productId) => {
     setCart(
@@ -161,9 +159,7 @@ const POS = () => {
           item.quantity >=
           item.availableStock
         ) {
-          alert(
-            `Only ${item.availableStock} units available`
-          );
+          toast.error(`Only ${item.availableStock} units available`);
           return item;
         }
 
@@ -180,9 +176,9 @@ const POS = () => {
     );
   };
 
-  // ==========================================
+
   // DECREASE QUANTITY
-  // ==========================================
+
 
   const decreaseQuantity = (productId) => {
     setCart(
@@ -210,9 +206,43 @@ const POS = () => {
     );
   };
 
-  // ==========================================
+
+
+  // UPDATE QUANTITY MANUALLY
+
+  const updateQuantity = (productId, value) => {
+    setCart(
+      cart.map((item) => {
+        if (item.productId !== productId) {
+          return item;
+        }
+
+        if (value > item.availableStock) {
+          toast.error(
+            `Only ${item.availableStock} units available`
+          );
+
+          return {
+            ...item,
+            quantity: item.availableStock,
+            totalPrice:
+              item.availableStock * item.unitPrice,
+          };
+        }
+
+        return {
+          ...item,
+          quantity: value,
+          totalPrice:
+            value * item.unitPrice,
+        };
+      })
+    );
+  };
+
+
   // REMOVE ITEM
-  // ==========================================
+
 
   const removeItem = (productId) => {
     setCart(
@@ -223,9 +253,9 @@ const POS = () => {
     );
   };
 
-  // ==========================================
+
   // TOTALS
-  // ==========================================
+
 
   const subtotal = cart.reduce(
     (total, item) =>
@@ -242,13 +272,13 @@ const POS = () => {
   const total = Math.max(
     0,
     subtotal -
-      discountAmount +
-      taxAmount
+    discountAmount +
+    taxAmount
   );
 
-  // ==========================================
+
   // COMPLETE SALE
-  // ==========================================
+
 
   const handleCompleteSale = async () => {
     if (cart.length === 0) {
@@ -264,9 +294,7 @@ const POS = () => {
       Number.isNaN(paid) ||
       paid < total
     ) {
-      alert(
-        "Amount paid is insufficient"
-      );
+      toast.error("Amount paid is insufficient");
       return;
     }
 
@@ -290,9 +318,7 @@ const POS = () => {
           amountPaid: paid,
         }).unwrap();
 
-      alert(
-        `Sale completed successfully! Sale #${result.sale.id}`
-      );
+      toast.success(`Sale completed successfully! Sale #${result.sale.id}`);
 
       // CLEAR POS
 
@@ -307,16 +333,14 @@ const POS = () => {
         error
       );
 
-      alert(
-        error?.data?.message ||
-          "Failed to complete sale"
-      );
+      toast.error(error?.data?.message ||
+        "Failed to complete sale");
     }
   };
 
-  // ==========================================
+
   // CUSTOMER CREATED
-  // ==========================================
+
 
   const handleCustomerCreated = (
     createdCustomer
@@ -334,9 +358,9 @@ const POS = () => {
     setShowCustomerForm(false);
   };
 
-  // ==========================================
+
   // UI
-  // ==========================================
+
 
   return (
     <POSContent
@@ -361,6 +385,9 @@ const POS = () => {
       }
       decreaseQuantity={
         decreaseQuantity
+      }
+      updateQuantity={
+        updateQuantity
       }
       removeItem={removeItem}
 
