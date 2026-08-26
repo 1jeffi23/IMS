@@ -18,7 +18,6 @@ import userRoutes from "./src/routes/userRoutes.js";
 import expenseRoutes from "./src/routes/expenseRoutes.js";
 import accountingRoutes from "./src/routes/accountingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
-import { Http2ServerResponse } from 'http2';
 import { setupSocketServer } from './src/socket/socketServer.js';
 
 
