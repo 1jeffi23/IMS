@@ -5,7 +5,7 @@ export const productApi = createApi({
   reducerPath: "productApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:3000/api",
+    baseUrl: "https://ims-backend-psi.vercel.app/api",
     credentials: "include",
   }),
 

@@ -58,7 +58,7 @@ const MessageBubble = ({
               : "rounded-bl-md bg-white text-gray-800 shadow-sm"
           }`}
         >
-          <p className="whitespace-pre-wrap break-words text-sm leading-6">
+          <p className="whitespace-pre-wrap wrap-break-word text-sm leading-6">
             {message.content}
           </p>
         </div>
