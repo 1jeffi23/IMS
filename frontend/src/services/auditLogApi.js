@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = "https://ims-backend-chi.vercel.app/api";
+const baseUrl = "http://localhost:3000/api";
 
 export const auditLogApi = createApi({
   reducerPath: "auditLogApi",

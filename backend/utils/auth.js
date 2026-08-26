@@ -9,30 +9,8 @@ import { createAuditLog } from "../utils/auditLogger.js";
 import { sendEmail } from "./email.js";
 
 import dotenv from "dotenv";
-import { eq } from "drizzle-orm";
 
 dotenv.config();
-
-
-const testUser = await db
-  .select({
-    email: schema.user.email,
-    providerId: schema.account.providerId,
-    hasPassword: schema.account.password,
-  })
-  .from(schema.user)
-  .leftJoin(
-    schema.account,
-    eq(schema.user.id, schema.account.userId)
-  )
-  .where(eq(schema.user.email, "aribalodhi6@gmail.com"));
-
-console.log("PRODUCTION AUTH DB CHECK:", {
-  found: testUser.length,
-  email: testUser[0]?.email,
-  providerId: testUser[0]?.providerId,
-  hasPassword: !!testUser[0]?.hasPassword,
-});
 
 
 export const auth = betterAuth({

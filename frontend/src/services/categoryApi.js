@@ -7,7 +7,7 @@ export const categoryApi = createApi({
   reducerPath: "categoryApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ims-backend-chi.vercel.app/api",
+    baseUrl: "http://localhost:3000/api",
     credentials: "include",
   }),
 
