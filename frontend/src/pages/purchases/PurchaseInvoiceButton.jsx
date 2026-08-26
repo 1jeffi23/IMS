@@ -33,7 +33,7 @@ const PurchaseTable = ({
 
       const response =
         await axios.get(
-          `https://ims-backend-psi.vercel.app/api/purchases/${purchaseId}/invoice`,
+          `https://ims-backend-chi.vercel.app/api/purchases/${purchaseId}/invoice`,
           {
             responseType: "blob",
              withCredentials: true,

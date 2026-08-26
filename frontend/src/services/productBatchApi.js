@@ -5,7 +5,7 @@ export const productBatchApi = createApi({
   reducerPath: "productBatchApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ims-backend-psi.vercel.app/api",
+    baseUrl: "https://ims-backend-chi.vercel.app/api",
     credentials: "include",
   }),
 

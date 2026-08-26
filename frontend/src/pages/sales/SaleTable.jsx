@@ -72,7 +72,7 @@ const SaleTable = () => {
       setDownloadingSaleId(saleId);
 
       const response = await axios.get(
-        `https://ims-backend-psi.vercel.app/api/sales/${saleId}/invoice`,
+        `https://ims-backend-chi.vercel.app/api/sales/${saleId}/invoice`,
         {
           responseType: "blob",
            withCredentials: true,
