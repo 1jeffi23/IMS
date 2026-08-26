@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import {
+  CalendarDays,
+  PackageCheck,
+  Plus,
+  RefreshCcw,
+  Search,
+} from "lucide-react";
 
 import {
   useGetPurchasesQuery,
@@ -10,14 +18,23 @@ import PurchaseTable from "./PurchaseInvoiceButton";
 import ErrorState from "../loader/ErrorState";
 import Loader from "../loader/Loader";
 
+import usePagination from "../../components/customHooks/usePagination";
+import Pagination from "../../components/customHooks/Pagination";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+
+
+const PURCHASES_PER_PAGE = 5;
+
 
 const Purchases = () => {
 
-  const [showForm, setShowForm] =
-    useState(false);
-
-  const [search, setSearch] =
-    useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
 
 
   // GET PURCHASES
@@ -32,17 +49,20 @@ const Purchases = () => {
   } = useGetPurchasesQuery();
 
 
-  const purchases =
-    data?.purchases || [];
+  const purchases = data?.purchases || [];
 
 
   // FILTER PURCHASES
 
-  const filteredPurchases =
-    purchases.filter((purchase) => {
+  const filteredPurchases = useMemo(() => {
 
-      const searchText =
-        search.toLowerCase().trim();
+    const searchText = search.toLowerCase().trim();
+
+    if (!searchText) {
+      return purchases;
+    }
+
+    return purchases.filter((purchase) => {
 
       return (
         purchase.invoiceNumber
@@ -56,20 +76,55 @@ const Purchases = () => {
 
     });
 
+  }, [purchases, search]);
+
+
+  // PAGINATION
+
+  const {
+    currentpage,
+    totalPages,
+    currentData,
+    nextPage,
+    prevPage,
+    gotoPage,
+  } = usePagination(
+    filteredPurchases,
+    PURCHASES_PER_PAGE
+  );
+
 
   // SUMMARY
 
-  const totalPurchases =
-    purchases.length;
+  const {
+    totalPurchases,
+    totalAmount,
+  } = useMemo(() => {
+
+    return {
+
+      totalPurchases: purchases.length,
+
+      totalAmount: purchases.reduce(
+        (total, purchase) =>
+          total +
+          Number(purchase.totalAmount || 0),
+        0
+      ),
+
+    };
+
+  }, [purchases]);
 
 
-  const totalAmount =
-    purchases.reduce(
-      (total, purchase) =>
-        total +
-        Number(purchase.totalAmount || 0),
-      0
-    );
+  // SEARCH
+
+  const handleSearch = (value) => {
+
+    setSearch(value);
+    gotoPage(1);
+
+  };
 
 
   // LOADING
@@ -102,123 +157,297 @@ const Purchases = () => {
 
   return (
 
-    <div className="p-6">
+    <div className="space-y-6 p-4 md:p-6">
 
 
       {/* HEADER */}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
 
-          <h1 className="text-2xl font-semibold">
-            Purchases
-          </h1>
+          <div className="flex items-center gap-3">
 
-          <p className="text-gray-500 mt-1">
-            Manage purchases and incoming stock
-          </p>
+            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+              <PackageCheck className="h-6 w-6" />
+
+            </div>
+
+            <div>
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+                Purchases
+              </h1>
+
+              <p className="text-sm text-muted-foreground">
+                Manage purchases and incoming stock
+              </p>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-black text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 transition"
-        >
-          + New Purchase
-        </button>
+        <div className="flex items-center gap-2">
+
+          {/* REFRESH */}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refetch}
+            disabled={isFetching}
+            title="Refresh"
+          >
+
+            <RefreshCcw
+              className={`h-4 w-4 ${
+                isFetching
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
+
+          </Button>
+
+
+          {/* NEW PURCHASE */}
+
+          <Button
+            onClick={() => setShowForm(true)}
+            className="gap-2"
+          >
+
+            <Plus className="h-4 w-4" />
+
+            <span>
+              New Purchase
+            </span>
+
+          </Button>
+
+        </div>
 
       </div>
 
 
       {/* SUMMARY */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
 
-        <div className="border rounded-xl p-5 bg-white">
+        {/* TOTAL PURCHASES */}
 
-          <p className="text-sm text-gray-500">
-            Total Purchases
-          </p>
+        <Card className="border-0 shadow-sm">
 
-          <p className="text-2xl font-semibold mt-2">
-            {totalPurchases}
-          </p>
+          <CardContent className="p-5">
 
-          <p className="text-xs text-gray-400 mt-1">
-            All recorded purchases
-          </p>
+            <div className="flex items-start justify-between">
 
-        </div>
+              <div>
+
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Purchases
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight">
+                  {totalPurchases.toLocaleString("en-PK")}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  All recorded purchases
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+                <PackageCheck className="h-5 w-5" />
+
+              </div>
+
+            </div>
+
+          </CardContent>
+
+        </Card>
 
 
-        <div className="border rounded-xl p-5 bg-white">
+        {/* TOTAL VALUE */}
 
-          <p className="text-sm text-gray-500">
-            Total Purchase Value
-          </p>
+        <Card className="border-0 shadow-sm">
 
-          <p className="text-2xl font-semibold mt-2">
-            Rs.{" "}
-            {totalAmount.toLocaleString("en-PK")}
-          </p>
+          <CardContent className="p-5">
 
-          <p className="text-xs text-gray-400 mt-1">
-            Total value of purchased stock
-          </p>
+            <div className="flex items-start justify-between">
 
-        </div>
+              <div>
 
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Purchase Value
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight">
+
+                  Rs.{" "}
+
+                  {totalAmount.toLocaleString("en-PK")}
+
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Total value of purchased stock
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-blue-100 p-2.5 text-blue-600">
+
+                <CalendarDays className="h-5 w-5" />
+
+              </div>
+
+            </div>
+
+          </CardContent>
+
+        </Card>
 
       </div>
 
 
       {/* SEARCH */}
 
-      <div className="mb-5">
+      <Card className="border-0 shadow-sm">
 
-        <input
-          type="text"
-          placeholder="Search by invoice number or supplier..."
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          className="w-full border rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-gray-200"
-        />
+        <CardContent className="p-4">
 
-      </div>
+          <div className="relative">
+
+            <Search
+              className="
+                absolute
+                left-3
+                top-1/2
+                h-4
+                w-4
+                -translate-y-1/2
+                text-muted-foreground
+              "
+            />
+
+            <input
+              type="text"
+              placeholder="Search by invoice number or supplier..."
+              value={search}
+              onChange={(e) =>
+                handleSearch(e.target.value)
+              }
+              className="
+                h-10
+                w-full
+                rounded-lg
+                border
+                border-input
+                bg-background
+                pl-9
+                pr-3
+                text-sm
+                outline-none
+                transition
+                placeholder:text-muted-foreground
+                focus:ring-2
+                focus:ring-emerald-500/20
+                focus:border-emerald-500
+              "
+            />
+
+          </div>
 
 
-      {/* RESULT COUNT */}
+          {/* RESULT INFO */}
 
-      <p className="text-sm text-gray-500 mb-3">
+          <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 
-        Showing{" "}
+            <p className="text-xs text-muted-foreground">
 
-        <span className="font-medium text-gray-700">
-          {filteredPurchases.length}
-        </span>{" "}
+              Showing{" "}
 
-        of{" "}
+              <span className="font-medium text-foreground">
 
-        <span className="font-medium text-gray-700">
-          {purchases.length}
-        </span>{" "}
+                {filteredPurchases.length === 0
+                  ? 0
+                  : (currentpage - 1) *
+                      PURCHASES_PER_PAGE +
+                    1}
 
-        purchases
+              </span>
 
-      </p>
+              {" "}–{" "}
+
+              <span className="font-medium text-foreground">
+
+                {Math.min(
+                  currentpage * PURCHASES_PER_PAGE,
+                  filteredPurchases.length
+                )}
+
+              </span>
+
+              {" "}of{" "}
+
+              <span className="font-medium text-foreground">
+                {filteredPurchases.length}
+              </span>
+
+              {" "}purchases
+
+            </p>
+
+
+            {search && (
+
+              <p className="text-xs text-muted-foreground">
+                Search results
+              </p>
+
+            )}
+
+          </div>
+
+        </CardContent>
+
+      </Card>
 
 
       {/* PURCHASE TABLE */}
 
-      <PurchaseTable
-        purchases={filteredPurchases}
-        refetch={refetch}
-        isFetching={isFetching}
+      <Card className="overflow-hidden border-0 shadow-sm">
+
+        <CardContent className="p-0">
+
+          <PurchaseTable
+            purchases={currentData}
+            refetch={refetch}
+            isFetching={isFetching}
+          />
+
+        </CardContent>
+
+      </Card>
+
+
+      {/* PAGINATION */}
+
+      <Pagination
+        currentpage={currentpage}
+        totalPages={totalPages}
+        nextPage={nextPage}
+        prevPage={prevPage}
+        gotoPage={gotoPage}
       />
 
 
@@ -227,13 +456,10 @@ const Purchases = () => {
       {showForm && (
 
         <PurchaseForm
-          onClose={() =>
-            setShowForm(false)
-          }
+          onClose={() => setShowForm(false)}
         />
 
       )}
-
 
     </div>
 

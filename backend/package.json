@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": " nodemon server.js",
     "db:generate": "drizzle-kit generate",
@@ -30,7 +31,8 @@
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "pdfkit": "^0.19.1",
-    "resend": "^6.18.1"
+    "resend": "^6.18.1",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",

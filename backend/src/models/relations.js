@@ -11,6 +11,7 @@ import { purchase } from "./purchaseModel.js";
 import { purchaseItem } from "./purchaseItemModel.js";
 import { sale} from "./saleModel.js";
 import {saleItem} from "./saleItemModel.js"
+import { chatMessage, conversation, conversationParticipant } from "./chatModel.js";
 
 
 // Category → Products
@@ -120,6 +121,51 @@ export const auditLogRelations = relations(
   ({ one }) => ({
     user: one(user, {
       fields: [auditLog.userId],
+      references: [user.id],
+    }),
+  })
+);
+
+
+export const conversationRelations = relations(
+  conversation,
+  ({ one, many }) => ({
+    creator: one(user, {
+      fields: [conversation.createdBy],
+      references: [user.id],
+    }),
+
+    participants: many(conversationParticipant),
+
+    messages: many(chatMessage),
+  })
+);
+
+export const conversationParticipantRelations = relations(
+  conversationParticipant,
+  ({ one }) => ({
+    conversation: one(conversation, {
+      fields: [conversationParticipant.conversationId],
+      references: [conversation.id],
+    }),
+
+    user: one(user, {
+      fields: [conversationParticipant.userId],
+      references: [user.id],
+    }),
+  })
+);
+
+export const chatMessageRelations = relations(
+  chatMessage,
+  ({ one }) => ({
+    conversation: one(conversation, {
+      fields: [chatMessage.conversationId],
+      references: [conversation.id],
+    }),
+
+    sender: one(user, {
+      fields: [chatMessage.senderId],
       references: [user.id],
     }),
   })

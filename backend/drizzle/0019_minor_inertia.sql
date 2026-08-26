@@ -1,0 +1,1 @@
+ALTER TABLE "conversation" ADD CONSTRAINT "conversation_name_unique" UNIQUE("name");

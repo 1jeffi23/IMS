@@ -1,10 +1,12 @@
+import { useMemo } from "react";
+
 import {
   useGetProductsQuery,
-} from "../services/productApi";
+} from "../../services/productApi";
 
 import {
   useGetSalesQuery,
-} from "../services/saleApi";
+} from "../../services/saleApi";
 
 import {
   Package,
@@ -17,25 +19,26 @@ import {
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
-import Loader from "./loader/Loader";
-import ErrorState from "./loader/ErrorState";
+
+import Loader from "../../pages/loader/Loader";
+import ErrorState from "../../pages/loader/ErrorState";
+
+import DashboardCharts from "./DashboardCharts";
 
 
 const Dashboard = () => {
-
   const navigate = useNavigate();
 
 
-  
+  // =====================================================
   // API
-  
+  // =====================================================
 
   const {
     data: productData,
     isLoading: productsLoading,
     isError: productsError,
   } = useGetProductsQuery();
-
 
   const {
     data: salesData,
@@ -44,111 +47,345 @@ const Dashboard = () => {
   } = useGetSalesQuery();
 
 
-  const products =
-    productData?.products || [];
-
-  const sales =
-    salesData?.sales || [];
+  const products = productData?.products || [];
+  const sales = salesData?.sales || [];
 
 
-  
-  // CALCULATIONS
-  
+  // =====================================================
+  // INVENTORY CALCULATIONS
+  // =====================================================
 
-  const activeProducts =
-    products.filter(
-      (product) => product.isActive
-    );
-
-
-  const lowStockProducts =
-    activeProducts.filter(
-      (product) =>
-        Number(product.quantity || 0) <=
-        Number(product.reorderLevel || 0)
-    );
+  const activeProducts = useMemo(
+    () =>
+      products.filter(
+        (product) => product.isActive
+      ),
+    [products]
+  );
 
 
-  const outOfStockProducts =
-    activeProducts.filter(
-      (product) =>
-        Number(product.quantity || 0) === 0
-    );
+  const lowStockProducts = useMemo(
+    () =>
+      activeProducts.filter(
+        (product) =>
+          Number(product.quantity || 0) <=
+          Number(product.reorderLevel || 0)
+      ),
+    [activeProducts]
+  );
 
 
-  const healthyStockProducts =
-    activeProducts.filter(
-      (product) =>
-        Number(product.quantity || 0) >
-        Number(product.reorderLevel || 0)
-    );
+  const outOfStockProducts = useMemo(
+    () =>
+      activeProducts.filter(
+        (product) =>
+          Number(product.quantity || 0) === 0
+      ),
+    [activeProducts]
+  );
 
 
-  const totalStock =
-    activeProducts.reduce(
-      (total, product) =>
-        total +
-        Number(product.quantity || 0),
-      0
-    );
+  const healthyStockProducts = useMemo(
+    () =>
+      activeProducts.filter(
+        (product) =>
+          Number(product.quantity || 0) >
+          Number(product.reorderLevel || 0)
+      ),
+    [activeProducts]
+  );
 
 
-  const totalSales =
-    sales.reduce(
-      (total, sale) =>
-        total +
-        Number(sale.total || 0),
-      0
-    );
+  const totalStock = useMemo(
+    () =>
+      activeProducts.reduce(
+        (total, product) =>
+          total +
+          Number(product.quantity || 0),
+        0
+      ),
+    [activeProducts]
+  );
 
 
-  const recentSales =
-    [...sales]
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt) -
-          new Date(a.createdAt)
-      )
-      .slice(0, 5);
+  // =====================================================
+  // SALES CALCULATIONS
+  // =====================================================
+
+  const totalSales = useMemo(
+    () =>
+      sales.reduce(
+        (total, sale) =>
+          total +
+          Number(sale.total || 0),
+        0
+      ),
+    [sales]
+  );
 
 
-  
-  // PERCENTAGES
-  
+  const recentSales = useMemo(
+    () =>
+      [...sales]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+        )
+        .slice(0, 5),
+    [sales]
+  );
 
-  const healthyPercentage =
-    activeProducts.length
-      ? Math.round(
+
+  // =====================================================
+  // STOCK PERCENTAGES
+  // =====================================================
+
+  const healthyPercentage = useMemo(
+    () =>
+      activeProducts.length
+        ? Math.round(
           (healthyStockProducts.length /
             activeProducts.length) *
-            100
+          100
         )
-      : 0;
+        : 0,
+    [
+      activeProducts.length,
+      healthyStockProducts.length,
+    ]
+  );
 
 
-  const lowStockPercentage =
-    activeProducts.length
-      ? Math.round(
+  const lowStockPercentage = useMemo(
+    () =>
+      activeProducts.length
+        ? Math.round(
           (lowStockProducts.length /
             activeProducts.length) *
-            100
+          100
         )
-      : 0;
+        : 0,
+    [
+      activeProducts.length,
+      lowStockProducts.length,
+    ]
+  );
 
 
-  const outOfStockPercentage =
-    activeProducts.length
-      ? Math.round(
+  const outOfStockPercentage = useMemo(
+    () =>
+      activeProducts.length
+        ? Math.round(
           (outOfStockProducts.length /
             activeProducts.length) *
-            100
+          100
         )
-      : 0;
+        : 0,
+    [
+      activeProducts.length,
+      outOfStockProducts.length,
+    ]
+  );
 
 
-  
+  // =====================================================
+  // NIVO - SALES TREND DATA
+  // =====================================================
+
+ const salesTrendData = useMemo(() => {
+  const groupedSales = {};
+
+  sales.forEach((sale) => {
+    if (!sale.createdAt) return;
+
+    const date = new Date(sale.createdAt);
+
+    const key = date.toLocaleDateString(
+      "en-CA"
+    );
+
+    groupedSales[key] =
+      (groupedSales[key] || 0) +
+      Number(sale.total || 0);
+  });
+
+  const data = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+
+    date.setDate(
+      date.getDate() - i
+    );
+
+    const key = date.toLocaleDateString(
+      "en-CA"
+    );
+
+    const label =
+      date.toLocaleDateString(
+        "en-PK",
+        {
+          day: "2-digit",
+          month: "short",
+        }
+      );
+
+    data.push({
+      date: label,
+      amount: groupedSales[key] || 0,
+    });
+  }
+
+  return [
+    {
+      id: "Sales",
+      data: data.map((item) => ({
+        x: item.date,
+        y: item.amount,
+      })),
+    },
+  ];
+}, [sales]);
+
+
+  // =====================================================
+  // NIVO - STOCK DISTRIBUTION DATA
+  // =====================================================
+
+  const stockDistributionData = useMemo(
+    () =>
+      [
+        {
+          id: "Healthy",
+          label: "Healthy",
+          value:
+            healthyStockProducts.length,
+        },
+        {
+          id: "Low Stock",
+          label: "Low Stock",
+          value:
+            lowStockProducts.length,
+        },
+        {
+          id: "Out of Stock",
+          label: "Out of Stock",
+          value:
+            outOfStockProducts.length,
+        },
+      ].filter(
+        (item) => item.value > 0
+      ),
+    [
+      healthyStockProducts.length,
+      lowStockProducts.length,
+      outOfStockProducts.length,
+    ]
+  );
+
+
+  // =====================================================
+  // NIVO - PAYMENT METHOD DATA
+  // =====================================================
+
+  const paymentMethodData = useMemo(() => {
+    const grouped = {};
+
+    sales.forEach((sale) => {
+      const method =
+        sale.paymentMethod ||
+        "Unknown";
+
+      grouped[method] =
+        (grouped[method] || 0) +
+        Number(sale.total || 0);
+    });
+
+
+    return Object.entries(grouped).map(
+      ([method, amount]) => ({
+        method,
+        amount,
+      })
+    );
+  }, [sales]);
+
+  // =====================================================
+  // NIVO - REVENUE VS COST DATA
+  // =====================================================
+
+  const revenueCostData = useMemo(() => {
+    const grouped = {};
+
+    sales.forEach((sale) => {
+      if (!sale.createdAt) return;
+
+      const date = new Date(sale.createdAt);
+
+      const key = date.toLocaleDateString("en-PK", {
+        day: "2-digit",
+        month: "short",
+      });
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          date: key,
+          revenue: 0,
+          cost: 0,
+        };
+      }
+
+      grouped[key].revenue += Number(sale.total || 0);
+
+      sale.items?.forEach((item) => {
+        const quantity = Number(item.quantity || 0);
+        const costPrice = Number(item.costPrice || 0);
+
+        grouped[key].cost += costPrice * quantity;
+      });
+    });
+
+    return Object.values(grouped).slice(-7);
+  }, [sales]);
+
+
+  // =====================================================
+  // NIVO - TOP SELLING PRODUCTS DATA
+  // =====================================================
+
+  const topSellingProductsData = useMemo(() => {
+    const grouped = {};
+
+    sales.forEach((sale) => {
+      sale.items?.forEach((item) => {
+        const productName =
+          item.productName || "Unknown Product";
+
+        grouped[productName] =
+          (grouped[productName] || 0) +
+          Number(item.quantity || 0);
+      });
+    });
+
+    return Object.entries(grouped)
+      .map(([product, quantity]) => ({
+        product,
+        quantity,
+      }))
+      .sort(
+        (a, b) =>
+          Number(b.quantity) -
+          Number(a.quantity)
+      )
+      .slice(0, 5);
+  }, [sales]);
+
+
+  // =====================================================
   // LOADING
-  
+  // =====================================================
 
   const isLoading =
     productsLoading ||
@@ -156,39 +393,42 @@ const Dashboard = () => {
 
 
   if (isLoading) {
-
-     return <Loader text="Loading..." />;
+    return (
+      <Loader text="Loading..." />
+    );
   }
 
 
-  
+  // =====================================================
   // ERROR
-  
+  // =====================================================
 
-  if (productsError || salesError) {
-
-   return (
+  if (
+    productsError ||
+    salesError
+  ) {
+    return (
       <ErrorState
-        title="Failedto load dashboard"
-        message={
-          // error?.data?.message ||
-          "There was a problem while loading inventory or sales data."
-        }
+        title="Failed to load dashboard"
+        message="There was a problem while loading inventory or sales data."
       />
     );
-
-
   }
 
+
+  // =====================================================
   // STAT CARDS
-  
+  // =====================================================
 
   const stats = [
-
     {
       title: "Total Products",
-      value: activeProducts.length.toLocaleString("en-PK"),
-      description: "Active products",
+      value:
+        activeProducts.length.toLocaleString(
+          "en-PK"
+        ),
+      description:
+        "Active products",
       icon: Package,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
@@ -196,8 +436,12 @@ const Dashboard = () => {
 
     {
       title: "Total Stock",
-      value: totalStock.toLocaleString("en-PK"),
-      description: "Units currently available",
+      value:
+        totalStock.toLocaleString(
+          "en-PK"
+        ),
+      description:
+        "Units currently available",
       icon: Boxes,
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
@@ -205,7 +449,10 @@ const Dashboard = () => {
 
     {
       title: "Low Stock",
-      value: lowStockProducts.length.toLocaleString("en-PK"),
+      value:
+        lowStockProducts.length.toLocaleString(
+          "en-PK"
+        ),
       description:
         lowStockProducts.length > 0
           ? "Products need attention"
@@ -223,22 +470,22 @@ const Dashboard = () => {
 
     {
       title: "Total Sales",
-      value: `Rs. ${totalSales.toLocaleString("en-PK")}`,
+      value: `Rs. ${totalSales.toLocaleString(
+        "en-PK"
+      )}`,
       description: `${sales.length} completed sales`,
       icon: ShoppingCart,
       iconBg: "bg-purple-50",
       iconColor: "text-purple-600",
     },
-
   ];
 
 
-  
+  // =====================================================
   // UI
-  
+  // =====================================================
 
   return (
-
     <div className="p-4 sm:p-6">
 
       <div className="max-w-8xl mx-auto">
@@ -246,7 +493,7 @@ const Dashboard = () => {
 
         {/* =====================================
             HEADER
-        */}
+        ====================================== */}
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
 
@@ -312,67 +559,67 @@ const Dashboard = () => {
 
         {/* =====================================
             STAT CARDS
-        */}
+        ====================================== */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          {stats.map(
-            (stat) => {
+          {stats.map((stat) => {
 
-              const Icon =
-                stat.icon;
+            const Icon =
+              stat.icon;
 
 
-              return (
+            return (
 
-                <div
-                  key={stat.title}
-                  className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-shadow"
-                >
+              <div
+                key={stat.title}
+                className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-shadow"
+              >
 
-                  <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
 
-                    <div
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center ${stat.iconBg}`}
-                    >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center ${stat.iconBg}`}
+                  >
 
-                      <Icon
-                        size={22}
-                        className={stat.iconColor}
-                      />
-
-                    </div>
+                    <Icon
+                      size={22}
+                      className={
+                        stat.iconColor
+                      }
+                    />
 
                   </div>
 
-
-                  <p className="text-sm text-gray-500 mt-5">
-                    {stat.title}
-                  </p>
-
-
-                  <p className="text-2xl font-semibold text-gray-900 mt-1">
-                    {stat.value}
-                  </p>
-
-
-                  <p className="text-xs text-gray-400 mt-1">
-                    {stat.description}
-                  </p>
-
                 </div>
 
-              );
 
-            }
-          )}
+                <p className="text-sm text-gray-500 mt-5">
+                  {stat.title}
+                </p>
+
+
+                <p className="text-2xl font-semibold text-gray-900 mt-1">
+                  {stat.value}
+                </p>
+
+
+                <p className="text-xs text-gray-400 mt-1">
+                  {stat.description}
+                </p>
+
+              </div>
+
+            );
+
+          })}
 
         </div>
 
 
         {/* =====================================
             RECENT SALES + STOCK OVERVIEW
-        */}
+        ====================================== */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 
@@ -499,6 +746,7 @@ const Dashboard = () => {
                         <p className="font-semibold text-sm text-gray-900">
 
                           Rs.{" "}
+
                           {Number(
                             sale.total || 0
                           ).toLocaleString(
@@ -509,7 +757,8 @@ const Dashboard = () => {
 
 
                         <p className="text-xs text-gray-400 capitalize mt-0.5">
-                          {sale.paymentMethod || "-"}
+                          {sale.paymentMethod ||
+                            "-"}
                         </p>
 
                       </div>
@@ -694,9 +943,11 @@ const Dashboard = () => {
                     <AlertTriangle size={17} />
 
                     {lowStockProducts.length}{" "}
+
                     {lowStockProducts.length === 1
                       ? "product needs"
                       : "products need"}{" "}
+
                     attention
 
                   </span>
@@ -715,9 +966,22 @@ const Dashboard = () => {
         </div>
 
 
-        {/*
+        {/* =====================================
+            NIVO CHARTS
+        ====================================== */}
+
+        <DashboardCharts
+          salesTrendData={salesTrendData}
+          stockDistributionData={stockDistributionData}
+          paymentMethodData={paymentMethodData}
+          revenueCostData={revenueCostData}
+          topSellingProductsData={topSellingProductsData}
+        />
+
+
+        {/* =====================================
             LOW STOCK PRODUCTS
-        */}
+        ====================================== */}
 
         {lowStockProducts.length > 0 && (
 
@@ -787,96 +1051,91 @@ const Dashboard = () => {
 
                   {lowStockProducts
                     .slice(0, 5)
-                    .map(
-                      (product) => {
+                    .map((product) => {
 
-                        const quantity =
-                          Number(
-                            product.quantity || 0
-                          );
-
-                        const reorderLevel =
-                          Number(
-                            product.reorderLevel || 0
-                          );
-
-                        const outOfStock =
-                          quantity === 0;
-
-
-                        return (
-
-                          <tr
-                            key={product.id}
-                            className="border-b last:border-b-0 hover:bg-gray-50"
-                          >
-
-                            <td className="px-5 py-4">
-
-                              <p className="font-medium text-sm text-gray-800">
-                                {product.name}
-                              </p>
-
-                            </td>
-
-
-                            <td className="px-5 py-4 text-sm text-gray-500">
-                              {product.sku}
-                            </td>
-
-
-                            <td className="px-5 py-4 text-right">
-
-                              <span
-                                className={`font-semibold ${
-                                  outOfStock
-                                    ? "text-red-600"
-                                    : "text-yellow-600"
-                                }`}
-                              >
-                                {quantity}
-                              </span>
-
-                            </td>
-
-
-                            <td className="px-5 py-4 text-right text-sm text-gray-500">
-                              {reorderLevel}
-                            </td>
-
-
-                            <td className="px-5 py-4 text-right">
-
-                              <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-                                  outOfStock
-                                    ? "bg-red-50 text-red-700"
-                                    : "bg-yellow-50 text-yellow-700"
-                                }`}
-                              >
-
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
-                                    outOfStock
-                                      ? "bg-red-500"
-                                      : "bg-yellow-500"
-                                  }`}
-                                />
-
-                                {outOfStock
-                                  ? "Out of Stock"
-                                  : "Low Stock"}
-
-                              </span>
-
-                            </td>
-
-                          </tr>
-
+                      const quantity =
+                        Number(
+                          product.quantity || 0
                         );
 
-                      }
-                    )}
+                      const reorderLevel =
+                        Number(
+                          product.reorderLevel || 0
+                        );
+
+                      const outOfStock =
+                        quantity === 0;
+
+
+                      return (
+
+                        <tr
+                          key={product.id}
+                          className="border-b last:border-b-0 hover:bg-gray-50"
+                        >
+
+                          <td className="px-5 py-4">
+
+                            <p className="font-medium text-sm text-gray-800">
+                              {product.name}
+                            </p>
+
+                          </td>
+
+
+                          <td className="px-5 py-4 text-sm text-gray-500">
+                            {product.sku}
+                          </td>
+
+
+                          <td className="px-5 py-4 text-right">
+
+                            <span
+                              className={`font-semibold ${outOfStock
+                                  ? "text-red-600"
+                                  : "text-yellow-600"
+                                }`}
+                            >
+                              {quantity}
+                            </span>
+
+                          </td>
+
+
+                          <td className="px-5 py-4 text-right text-sm text-gray-500">
+                            {reorderLevel}
+                          </td>
+
+
+                          <td className="px-5 py-4 text-right">
+
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${outOfStock
+                                  ? "bg-red-50 text-red-700"
+                                  : "bg-yellow-50 text-yellow-700"
+                                }`}
+                            >
+
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${outOfStock
+                                    ? "bg-red-500"
+                                    : "bg-yellow-500"
+                                  }`}
+                              />
+
+                              {outOfStock
+                                ? "Out of Stock"
+                                : "Low Stock"}
+
+                            </span>
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    })}
 
                 </tbody>
 
@@ -916,9 +1175,7 @@ const Dashboard = () => {
       </div>
 
     </div>
-
   );
-
 };
 
 

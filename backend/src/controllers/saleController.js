@@ -4,6 +4,7 @@ import { sale } from "../models/saleModel.js";
 import { saleItem } from "../models/saleItemModel.js";
 import { product } from "../models/productModel.js";
 import { customer } from "../models/customerModel.js";
+import { productBatch } from "../models/productBatchModel.js";
 
 import {
   and,
@@ -15,7 +16,6 @@ import {
 } from "drizzle-orm";
 
 import { createAuditLog } from "../../utils/auditLogger.js";
-import { productBatch } from "../models/productBatchModel.js";
 
 
 // =====================================================
@@ -294,6 +294,8 @@ export const createSale = async (req, res) => {
             // -----------------------------------------
             // PREPARE SALE ITEM
             // -----------------------------------------
+            // costPrice comes directly from DB batch.
+            // It is NOT taken from frontend/request.
 
             saleItemsData.push({
               productId,
@@ -306,6 +308,9 @@ export const createSale = async (req, res) => {
 
               unitPrice:
                 String(unitPrice),
+
+              costPrice:
+                String(batch.costPrice),
 
               totalPrice:
                 String(itemTotal),
@@ -477,18 +482,22 @@ export const createSale = async (req, res) => {
   }
 };
 
+
 // =====================================================
 // GET ALL SALES
 // NO AUDIT LOG
 // =====================================================
 
 export const getSales = async (req, res) => {
-
   try {
+    // -----------------------------------------------
+    // GET ALL SALES + CUSTOMER
+    // -----------------------------------------------
 
     const sales = await db
       .select({
-        id: sale.id,
+        id:
+          sale.id,
 
         customerId:
           sale.customerId,
@@ -522,6 +531,7 @@ export const getSales = async (req, res) => {
 
       .leftJoin(
         customer,
+
         eq(
           sale.customerId,
           customer.id
@@ -533,33 +543,99 @@ export const getSales = async (req, res) => {
       );
 
 
-    return res.status(200).json({
+    // -----------------------------------------------
+    // GET ALL SALE ITEMS + PRODUCT
+    // Same approach as getSaleById
+    // -----------------------------------------------
 
+    const items =
+      await db
+        .select({
+          id:
+            saleItem.id,
+
+          saleId:
+            saleItem.saleId,
+
+          productId:
+            saleItem.productId,
+
+          productName:
+            product.name,
+
+          sku:
+            product.sku,
+
+          unit:
+            product.unit,
+
+          quantity:
+            saleItem.quantity,
+
+          unitPrice:
+            saleItem.unitPrice,
+
+          costPrice:
+            saleItem.costPrice,
+
+          totalPrice:
+            saleItem.totalPrice,
+        })
+
+        .from(saleItem)
+
+        .leftJoin(
+          product,
+
+          eq(
+            saleItem.productId,
+            product.id
+          )
+        );
+
+
+    // -----------------------------------------------
+    // ATTACH ITEMS TO THEIR SALE
+    // -----------------------------------------------
+
+    const salesWithItems =
+      sales.map(
+        (currentSale) => ({
+          ...currentSale,
+
+          items:
+            items.filter(
+              (item) =>
+                item.saleId ===
+                currentSale.id
+            ),
+        })
+      );
+
+
+    // -----------------------------------------------
+    // SUCCESS
+    // -----------------------------------------------
+
+    return res.status(200).json({
       message:
         "Sales fetched successfully",
 
-      sales,
-
+      sales:
+        salesWithItems,
     });
 
-
   } catch (error) {
-
     console.error(
       "Get sales error:",
       error
     );
 
-
     return res.status(500).json({
-
       message:
         "Failed to fetch sales",
-
     });
-
   }
-
 };
 
 
@@ -569,177 +645,152 @@ export const getSales = async (req, res) => {
 // =====================================================
 
 export const getSaleById = async (req, res) => {
-
   try {
-
     const saleId =
       Number(req.params.id);
 
-
-   
+    // -----------------------------------------------
     // VALIDATE SALE ID
-   
+    // -----------------------------------------------
 
     if (Number.isNaN(saleId)) {
-
       return res.status(400).json({
-
         message:
           "Invalid sale ID",
-
       });
-
     }
 
-
-   
+    // -----------------------------------------------
     // GET SALE + CUSTOMER
-   
+    // -----------------------------------------------
 
-    const [saleData] = await db
+    const [saleData] =
+      await db
+        .select({
+          id:
+            sale.id,
 
-      .select({
+          customerId:
+            sale.customerId,
 
-        id:
-          sale.id,
+          customerName:
+            customer.name,
 
-        customerId:
-          sale.customerId,
+          customerPhone:
+            customer.phone,
 
-        customerName:
-          customer.name,
+          customerEmail:
+            customer.email,
 
-        customerPhone:
-          customer.phone,
+          subtotal:
+            sale.subtotal,
 
-        customerEmail:
-          customer.email,
+          discount:
+            sale.discount,
 
-        subtotal:
-          sale.subtotal,
+          tax:
+            sale.tax,
 
-        discount:
-          sale.discount,
+          total:
+            sale.total,
 
-        tax:
-          sale.tax,
+          paymentMethod:
+            sale.paymentMethod,
 
-        total:
-          sale.total,
+          amountPaid:
+            sale.amountPaid,
 
-        paymentMethod:
-          sale.paymentMethod,
+          createdAt:
+            sale.createdAt,
+        })
 
-        amountPaid:
-          sale.amountPaid,
+        .from(sale)
 
-        createdAt:
-          sale.createdAt,
+        .leftJoin(
+          customer,
 
-      })
-
-      .from(sale)
-
-      .leftJoin(
-
-        customer,
-
-        eq(
-          sale.customerId,
-          customer.id
+          eq(
+            sale.customerId,
+            customer.id
+          )
         )
 
-      )
+        .where(
+          eq(
+            sale.id,
+            saleId
+          )
+        );
 
-      .where(
-
-        eq(
-          sale.id,
-          saleId
-        )
-
-      );
-
-
-   
+    // -----------------------------------------------
     // SALE NOT FOUND
-   
+    // -----------------------------------------------
 
     if (!saleData) {
-
       return res.status(404).json({
-
         message:
           "Sale not found",
-
       });
-
     }
 
-
-   
+    // -----------------------------------------------
     // GET SALE ITEMS + PRODUCT
-   
+    // -----------------------------------------------
 
-    const items = await db
+    const items =
+      await db
+        .select({
+          id:
+            saleItem.id,
 
-      .select({
+          productId:
+            saleItem.productId,
 
-        id:
-          saleItem.id,
+          productName:
+            product.name,
 
-        productId:
-          saleItem.productId,
+          sku:
+            product.sku,
 
-        productName:
-          product.name,
+          unit:
+            product.unit,
 
-        sku:
-          product.sku,
+          quantity:
+            saleItem.quantity,
 
-        unit:
-          product.unit,
+          unitPrice:
+            saleItem.unitPrice,
 
-        quantity:
-          saleItem.quantity,
+          costPrice:
+            saleItem.costPrice,
 
-        unitPrice:
-          saleItem.unitPrice,
+          totalPrice:
+            saleItem.totalPrice,
+        })
 
-        totalPrice:
-          saleItem.totalPrice,
+        .from(saleItem)
 
-      })
+        .leftJoin(
+          product,
 
-      .from(saleItem)
-
-      .leftJoin(
-
-        product,
-
-        eq(
-          saleItem.productId,
-          product.id
+          eq(
+            saleItem.productId,
+            product.id
+          )
         )
 
-      )
+        .where(
+          eq(
+            saleItem.saleId,
+            saleId
+          )
+        );
 
-      .where(
-
-        eq(
-          saleItem.saleId,
-          saleId
-        )
-
-      );
-
-
-   
+    // -----------------------------------------------
     // SUCCESS
-   
+    // -----------------------------------------------
 
     return res.status(200).json({
-
       message:
         "Sale fetched successfully",
 
@@ -747,25 +798,17 @@ export const getSaleById = async (req, res) => {
         saleData,
 
       items,
-
     });
 
-
   } catch (error) {
-
     console.error(
       "Get sale by ID error:",
       error
     );
 
-
     return res.status(500).json({
-
       message:
         "Failed to fetch sale",
-
     });
-
   }
-
 };

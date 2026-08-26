@@ -20,7 +20,7 @@ const router = express.Router();
 router.get(
   "/",
   requireAuth,
-  requireRole("admin"),
+  requireRole("admin","manager","cashier"),
   getUsers
 );
 

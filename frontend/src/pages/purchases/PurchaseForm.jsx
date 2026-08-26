@@ -1009,10 +1009,34 @@ const PurchaseForm = ({ onClose }) => {
                           </div>
 
 
+                          {/* UNIT */}
+
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              Unit *
+                            </label>
+
+                            <select
+                              name="unit"
+                              value={newProduct.unit}
+                              onChange={handleNewProductChange}
+                              className="w-full border rounded-lg px-3 py-2 bg-white"
+                            >
+                              <option value="piece">Piece</option>
+                              <option value="kg">Kilogram (kg)</option>
+                              <option value="g">Gram (g)</option>
+                              <option value="liter">Liter (L)</option>
+                              <option value="ml">Milliliter (ml)</option>
+                              <option value="pack">Pack</option>
+                              <option value="box">Box</option>
+                              <option value="dozen">Dozen</option>
+                            </select>
+                          </div>
+
+
                           {/* SELLING PRICE */}
 
                           <div>
-
                             <label className="block text-sm font-medium mb-1">
                               Selling Price *
                             </label>
@@ -1020,18 +1044,13 @@ const PurchaseForm = ({ onClose }) => {
                             <input
                               type="number"
                               name="sellingPrice"
-                              value={
-                                newProduct.sellingPrice
-                              }
-                              onChange={
-                                handleNewProductChange
-                              }
+                              value={newProduct.sellingPrice}
+                              onChange={handleNewProductChange}
                               min="0"
                               step="0.01"
                               placeholder="0"
                               className="w-full border rounded-lg px-3 py-2 bg-white"
                             />
-
                           </div>
 
                         </div>

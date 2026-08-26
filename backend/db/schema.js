@@ -11,6 +11,8 @@ export * from "../src/models/saleModel.js";
 export * from "../src/models/saleItemModel.js";
 export * from "../src/models/customerModel.js";
 export * from "../src/models/auditLogModel.js";
+export * from "../src/models/expenseModel.js";
+export * from "../src/models/chatModel.js";
 
 
 

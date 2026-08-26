@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { chatMessage, conversation, conversationParticipant } from "./chatModel.js";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -76,7 +77,13 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
- 
+  //for chat
+  // createdConversations: many(conversation),
+
+  // conversationParticipants: many(conversationParticipant),
+
+  // sentMessages: many(chatMessage),
+
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import {
+  CheckCircle2,
+  FolderTree,
+  Plus,
+  RefreshCcw,
+  XCircle,
+} from "lucide-react";
 
 import {
   useGetCategoriesQuery,
@@ -7,13 +15,28 @@ import {
 
 import CategoryForm from "./CategoryForm";
 import CategoryTable from "./CategoryTable";
+
 import ErrorState from "../loader/ErrorState";
 import Loader from "../loader/Loader";
 
+import usePagination from "../../components/customHooks/usePagination";
+import Pagination from "../../components/customHooks/Pagination";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+
+
+const CATEGORIES_PER_PAGE = 7;
+
+
 const Category = () => {
 
+  // =====================================================
   // DATA
-
+  // =====================================================
 
   const {
     data,
@@ -21,6 +44,7 @@ const Category = () => {
     isError,
     error,
     refetch,
+    isFetching,
   } = useGetCategoriesQuery();
 
   const [
@@ -31,8 +55,9 @@ const Category = () => {
   const categories = data?.categories || [];
 
 
+  // =====================================================
   // STATE
-
+  // =====================================================
 
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -43,42 +68,61 @@ const Category = () => {
   const [deactivatingId, setDeactivatingId] = useState(null);
 
 
+  // =====================================================
   // SUMMARY
+  // =====================================================
+
+  const {
+    totalCategories,
+    activeCategories,
+    inactiveCategories,
+  } = useMemo(() => {
+
+    const total = categories.length;
+
+    const active = categories.filter(
+      (category) => category.isActive
+    ).length;
+
+    return {
+      totalCategories: total,
+      activeCategories: active,
+      inactiveCategories: total - active,
+    };
+
+  }, [categories]);
 
 
-  const totalCategories = categories.length;
-
-  const activeCategories = categories.filter(
-    (category) => category.isActive
-  ).length;
-
-  const inactiveCategories = categories.filter(
-    (category) => !category.isActive
-  ).length;
-
-
+  // =====================================================
   // ADD
-
+  // =====================================================
 
   const handleAdd = () => {
+
     setEditingCategory(null);
     setShowForm(true);
+
   };
 
 
+  // =====================================================
   // EDIT
-
+  // =====================================================
 
   const handleEdit = (category) => {
+
     setEditingCategory(category);
     setShowForm(true);
+
   };
 
 
+  // =====================================================
   // DEACTIVATE
-
+  // =====================================================
 
   const handleDeactivate = async (id) => {
+
     const confirmed = window.confirm(
       "Are you sure you want to deactivate this category?"
     );
@@ -86,10 +130,13 @@ const Category = () => {
     if (!confirmed) return;
 
     try {
+
       setDeactivatingId(id);
 
       await deactivateCategory(id).unwrap();
+
     } catch (error) {
+
       console.error(
         "Failed to deactivate category:",
         error
@@ -97,22 +144,28 @@ const Category = () => {
 
       alert(
         error?.data?.message ||
-          "Failed to deactivate category"
+        "Failed to deactivate category"
       );
+
     } finally {
+
       setDeactivatingId(null);
+
     }
+
   };
 
 
+  // =====================================================
   // FILTER
+  // =====================================================
 
+  const filteredCategories = useMemo(() => {
 
-  const filteredCategories = categories.filter(
-    (category) => {
-      const searchText = search
-        .toLowerCase()
-        .trim();
+    const searchText =
+      search.toLowerCase().trim();
+
+    return categories.filter((category) => {
 
       const matchesSearch =
         !searchText ||
@@ -126,210 +179,424 @@ const Category = () => {
       let matchesStatus = true;
 
       if (statusFilter === "active") {
+
         matchesStatus =
           category.isActive === true;
+
       }
 
       if (statusFilter === "inactive") {
+
         matchesStatus =
           category.isActive === false;
+
       }
 
       return matchesSearch && matchesStatus;
-    }
+
+    });
+
+  }, [categories, search, statusFilter]);
+
+
+  // =====================================================
+  // PAGINATION
+  // =====================================================
+
+  const {
+    currentpage,
+    totalPages,
+    currentData,
+    nextPage,
+    prevPage,
+    gotoPage,
+  } = usePagination(
+    filteredCategories,
+    CATEGORIES_PER_PAGE
   );
 
 
-  // LOADING
+  // =====================================================
+  // SEARCH / FILTER HANDLERS
+  // =====================================================
 
+  const handleSearch = (value) => {
+
+    setSearch(value);
+    gotoPage(1);
+
+  };
+
+
+  const handleStatusChange = (value) => {
+
+    setStatusFilter(value);
+    gotoPage(1);
+
+  };
+
+
+  const clearFilters = () => {
+
+    setSearch("");
+    setStatusFilter("all");
+    gotoPage(1);
+
+  };
+
+
+  const hasFilters =
+    Boolean(search) ||
+    statusFilter !== "all";
+
+
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   if (isLoading) {
-    return <Loader text="Loading Categories..." />;
+
+    return (
+      <Loader text="Loading Categories..." />
+    );
+
   }
 
 
+  // =====================================================
   // ERROR
-
+  // =====================================================
 
   if (isError) {
+
     return (
-    <ErrorState
-      title="Failed to load categories"
-      message={
-        error?.data?.message ||
-        "Something went wrong while fetching categories."
-      }
-    />
-  );
+      <ErrorState
+        title="Failed to load categories"
+        message={
+          error?.data?.message ||
+          "Something went wrong while fetching categories."
+        }
+      />
+    );
+
   }
 
 
+  // =====================================================
   // UI
+  // =====================================================
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
-      <div className="max-w-8xl mx-auto space-y-6">
 
-        {/* 
-            HEADER
-        = */}
+    <div className="space-y-6 p-4 md:p-6">
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Categories
-            </h1>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Organize and manage your product categories
-            </p>
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+              <FolderTree className="h-6 w-6" />
+
+            </div>
+
+            <div>
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+                Categories
+              </h1>
+
+              <p className="text-sm text-muted-foreground">
+                Organize and manage your product categories
+              </p>
+
+            </div>
+
           </div>
 
-          <button
-            onClick={handleAdd}
-            className="inline-flex items-center justify-center gap-2 bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition shadow-sm"
-          >
-            <span className="text-lg leading-none">
-              +
-            </span>
-
-            Add Category
-          </button>
         </div>
 
-        {/* 
-            SUMMARY CARDS
-        = */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="flex items-center gap-2">
 
-          {/* TOTAL */}
+          {/* REFRESH */}
 
-          <div className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refetch}
+            disabled={isFetching}
+            title="Refresh"
+          >
+
+            <RefreshCcw
+              className={`h-4 w-4 ${
+                isFetching
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
+
+          </Button>
+
+
+          {/* ADD CATEGORY */}
+
+          <Button
+            onClick={handleAdd}
+            className="gap-2"
+          >
+
+            <Plus className="h-4 w-4" />
+
+            <span>
+              Add Category
+            </span>
+
+          </Button>
+
+        </div>
+
+      </div>
+
+
+      {/* =================================================
+          SUMMARY
+      ================================================= */}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+
+        {/* TOTAL */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Total Categories
                 </p>
 
-                <p className="text-3xl font-semibold text-gray-900 mt-2">
-                  {totalCategories}
+                <p className="mt-2 text-2xl font-bold tracking-tight">
+                  {totalCategories.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   All categories
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M4 5h16v14H4z" />
-                  <path d="M8 9h8M8 13h5" />
-                </svg>
+
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+                <FolderTree className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
 
-          {/* ACTIVE */}
+          </CardContent>
 
-          <div className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        </Card>
+
+
+        {/* ACTIVE */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Active Categories
                 </p>
 
-                <p className="text-3xl font-semibold text-green-600 mt-2">
-                  {activeCategories}
+                <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-600">
+                  {activeCategories.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Currently available
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M5 12l4 4L19 6" />
-                </svg>
+
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+                <CheckCircle2 className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
 
-          {/* INACTIVE */}
+          </CardContent>
 
-          <div className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition">
+        </Card>
+
+
+        {/* INACTIVE */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Inactive Categories
                 </p>
 
-                <p className="text-3xl font-semibold text-gray-500 mt-2">
-                  {inactiveCategories}
+                <p className="mt-2 text-2xl font-bold tracking-tight text-gray-500">
+                  {inactiveCategories.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Currently disabled
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
-                  />
 
-                  <path d="M8 12h8" />
-                </svg>
+              <div className="rounded-xl bg-gray-100 p-2.5 text-gray-500">
+
+                <XCircle className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
-        </div>
 
-        {/* 
-            TABLE + SEARCH
-        = */}
+          </CardContent>
 
-        <CategoryTable
-          categories={categories}
-          filteredCategories={filteredCategories}
-          search={search}
-          setSearch={setSearch}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          onEdit={handleEdit}
-          onDeactivate={handleDeactivate}
-          deactivatingId={deactivatingId}
-          isDeactivating={isDeactivating}
-        />
+        </Card>
+
       </div>
 
-      {/* 
+
+      {/* =================================================
+          SEARCH + FILTER
+      ================================================= */}
+
+      <Card className="border-0 shadow-sm">
+
+        <CardContent className="p-4">
+
+          <CategoryTable
+            categories={currentData}
+            filteredCategories={filteredCategories}
+            search={search}
+            setSearch={handleSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={handleStatusChange}
+            onEdit={handleEdit}
+            onDeactivate={handleDeactivate}
+            deactivatingId={deactivatingId}
+            isDeactivating={isDeactivating}
+          />
+
+        </CardContent>
+
+      </Card>
+
+
+      {/* =================================================
+          RESULT INFO
+      ================================================= */}
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+        <p className="text-xs text-muted-foreground">
+
+          Showing{" "}
+
+          <span className="font-medium text-foreground">
+
+            {filteredCategories.length === 0
+              ? 0
+              : (currentpage - 1) *
+                  CATEGORIES_PER_PAGE +
+                1}
+
+          </span>
+
+          {" "}–{" "}
+
+          <span className="font-medium text-foreground">
+
+            {Math.min(
+              currentpage *
+                CATEGORIES_PER_PAGE,
+              filteredCategories.length
+            )}
+
+          </span>
+
+          {" "}of{" "}
+
+          <span className="font-medium text-foreground">
+            {filteredCategories.length}
+          </span>
+
+          {" "}categories
+
+        </p>
+
+
+        {hasFilters && (
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </Button>
+
+        )}
+
+      </div>
+
+
+      {/* =================================================
+          PAGINATION
+      ================================================= */}
+
+      {totalPages > 1 && (
+
+        <Pagination
+          currentpage={currentpage}
+          totalPages={totalPages}
+          nextPage={nextPage}
+          prevPage={prevPage}
+          gotoPage={gotoPage}
+        />
+
+      )}
+
+
+      {/* =================================================
           FORM
-      = */}
+      ================================================= */}
 
       {showForm && (
+
         <CategoryForm
           category={editingCategory}
           onClose={() => {
@@ -337,9 +604,14 @@ const Category = () => {
             setEditingCategory(null);
           }}
         />
+
       )}
+
     </div>
+
   );
+
 };
+
 
 export default Category;

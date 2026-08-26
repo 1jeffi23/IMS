@@ -1,26 +1,40 @@
-import { useMemo, useState } from "react";
-import { useGetSuppliersQuery } from "../../services/supplierApi";
-import SupplierForm from "./SupplierForm";
-import SupplierTable from "./SupplierTable";
+import { useMemo, useState, useEffect } from "react";
 
 import {
+  Mail,
+  Phone,
+  Plus,
+  RefreshCcw,
+  Search,
   Users,
   UserCheck,
   UserX,
-  Search,
-  Plus,
   X,
 } from "lucide-react";
-import ErrorState from "../loader/ErrorState";
+
+import { useGetSuppliersQuery } from "../../services/supplierApi";
+
+import SupplierForm from "./SupplierForm";
+import SupplierTable from "./SupplierTable";
+
 import Loader from "../loader/Loader";
+import ErrorState from "../loader/ErrorState";
+
+import usePagination from "../../components/customHooks/usePagination";
+import Pagination from "../../components/customHooks/Pagination";
+
+import { Button } from "@/components/ui/button";
+
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+
+
+const SUPPLIERS_PER_PAGE = 7;
+
 
 const Suppliers = () => {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useGetSuppliersQuery();
 
   const [showForm, setShowForm] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
@@ -28,266 +42,652 @@ const Suppliers = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+
+  // =====================================================
+  // GET SUPPLIERS
+  // =====================================================
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useGetSuppliersQuery();
+
+
   const suppliers = data?.suppliers || [];
 
-  // Form handlers
+
+  // =====================================================
+  // FORM HANDLERS
+  // =====================================================
+
   const handleAdd = () => {
     setEditingSupplier(null);
     setShowForm(true);
   };
+
 
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier);
     setShowForm(true);
   };
 
+
   const closeForm = () => {
     setShowForm(false);
     setEditingSupplier(null);
   };
 
-  // Filters
+
+  // =====================================================
+  // FILTER SUPPLIERS
+  // =====================================================
+
   const filteredSuppliers = useMemo(() => {
+
+    const searchText =
+      search.toLowerCase().trim();
+
+
     return suppliers.filter((supplier) => {
-      const searchText = search.toLowerCase().trim();
 
       const matchesSearch =
         !searchText ||
-        supplier.name?.toLowerCase().includes(searchText) ||
-        supplier.phone?.toLowerCase().includes(searchText) ||
-        supplier.email?.toLowerCase().includes(searchText) ||
-        supplier.address?.toLowerCase().includes(searchText);
+        supplier.name
+          ?.toLowerCase()
+          .includes(searchText) ||
+        supplier.phone
+          ?.toLowerCase()
+          .includes(searchText) ||
+        supplier.email
+          ?.toLowerCase()
+          .includes(searchText) ||
+        supplier.address
+          ?.toLowerCase()
+          .includes(searchText);
 
-      let matchesStatus = true;
 
-      if (statusFilter === "active") {
-        matchesStatus = supplier.isActive === true;
-      }
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" &&
+          supplier.isActive === true) ||
+        (statusFilter === "inactive" &&
+          supplier.isActive === false);
 
-      if (statusFilter === "inactive") {
-        matchesStatus = supplier.isActive === false;
-      }
 
-      return matchesSearch && matchesStatus;
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+
     });
-  }, [suppliers, search, statusFilter]);
 
-  // Summary
-  const totalSuppliers = suppliers.length;
+  }, [
+    suppliers,
+    search,
+    statusFilter,
+  ]);
 
-  const activeSuppliers = suppliers.filter(
-    (supplier) => supplier.isActive
-  ).length;
 
-  const inactiveSuppliers = suppliers.filter(
-    (supplier) => !supplier.isActive
-  ).length;
+  // =====================================================
+  // PAGINATION
+  // =====================================================
 
-  // Clear filters
-  const clearFilters = () => {
-    setSearch("");
-    setStatusFilter("all");
+  const {
+    currentpage,
+    totalPages,
+    currentData: currentSuppliers,
+    nextPage,
+    prevPage,
+    gotoPage,
+  } = usePagination(
+    filteredSuppliers,
+    SUPPLIERS_PER_PAGE
+  );
+
+
+  // =====================================================
+  // RESET PAGE WHEN FILTER CHANGES
+  // =====================================================
+
+  useEffect(() => {
+
+    gotoPage(1);
+
+  }, [search, statusFilter]);
+
+
+  // =====================================================
+  // SUMMARY
+  // =====================================================
+
+  const {
+    totalSuppliers,
+    activeSuppliers,
+    inactiveSuppliers,
+  } = useMemo(() => {
+
+    const total = suppliers.length;
+
+    const active =
+      suppliers.filter(
+        (supplier) =>
+          supplier.isActive === true
+      ).length;
+
+    return {
+      totalSuppliers: total,
+      activeSuppliers: active,
+      inactiveSuppliers:
+        total - active,
+    };
+
+  }, [suppliers]);
+
+
+  // =====================================================
+  // FILTER HANDLERS
+  // =====================================================
+
+  const handleSearch = (value) => {
+
+    setSearch(value);
+    gotoPage(1);
+
   };
 
+
+  const handleStatusChange = (value) => {
+
+    setStatusFilter(value);
+    gotoPage(1);
+
+  };
+
+
+  const clearFilters = () => {
+
+    setSearch("");
+    setStatusFilter("all");
+    gotoPage(1);
+
+  };
+
+
   const hasFilters =
-    search || statusFilter !== "all";
+    Boolean(search) ||
+    statusFilter !== "all";
 
-  // Loading
+
+  // =====================================================
+  // LOADING
+  // =====================================================
+
   if (isLoading) {
-     return <Loader text="Loading Suppliers..." />;
+
+    return (
+      <Loader text="Loading Suppliers..." />
+    );
+
   }
 
-  // Error
+
+  // =====================================================
+  // ERROR
+  // =====================================================
+
   if (isError) {
+
     return (
-       <ErrorState
-         title="Failed to load suppliers"
-         message={
-           error?.data?.message ||
-           "Something went wrong while fetching suppliers."
-         }
-       />
-     );
+      <ErrorState
+        title="Failed to load suppliers"
+        message={
+          error?.data?.message ||
+          "Something went wrong while fetching suppliers."
+        }
+      />
+    );
+
   }
+
+
+  // =====================================================
+  // UI
+  // =====================================================
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-full">
-      <div className="max-w-8xl mx-auto space-y-6">
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 p-4 md:p-6">
+
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Users size={23} className="text-purple-600" />
+
+            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+              <Users className="h-6 w-6" />
+
             </div>
 
+
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
                 Suppliers
               </h1>
 
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-muted-foreground">
                 Manage your supplier information
               </p>
+
             </div>
+
           </div>
 
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="inline-flex items-center justify-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-700 active:scale-[0.98] shadow-sm shadow-purple-200 transition"
-          >
-            <Plus size={18} />
-            Add Supplier
-          </button>
         </div>
 
-        {/* Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+        <div className="flex items-center gap-2">
+
+          {/* REFRESH */}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refetch}
+            disabled={isFetching}
+            title="Refresh"
+          >
+
+            <RefreshCcw
+              className={`h-4 w-4 ${
+                isFetching
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
+
+          </Button>
+
+
+          {/* ADD SUPPLIER */}
+
+          <Button
+            onClick={handleAdd}
+            className="gap-2"
+          >
+
+            <Plus className="h-4 w-4" />
+
+            <span>
+              Add Supplier
+            </span>
+
+          </Button>
+
+        </div>
+
+      </div>
+
+
+      {/* =================================================
+          SUMMARY
+      ================================================= */}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+
+        {/* TOTAL SUPPLIERS */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Total Suppliers
                 </p>
 
-                <p className="text-3xl font-semibold text-gray-900 mt-2">
-                  {totalSuppliers}
+                <p className="mt-2 text-2xl font-bold tracking-tight">
+                  {totalSuppliers.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   All registered suppliers
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center">
-                <Users size={21} className="text-purple-600" />
+
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+                <Users className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          </CardContent>
+
+        </Card>
+
+
+        {/* ACTIVE SUPPLIERS */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Active Suppliers
                 </p>
 
-                <p className="text-3xl font-semibold text-green-600 mt-2">
-                  {activeSuppliers}
+                <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-600">
+                  {activeSuppliers.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Currently available
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center">
-                <UserCheck size={21} className="text-green-600" />
+
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+                <UserCheck className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          </CardContent>
+
+        </Card>
+
+
+        {/* INACTIVE SUPPLIERS */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
+
               <div>
-                <p className="text-sm text-gray-500">
+
+                <p className="text-sm font-medium text-muted-foreground">
                   Inactive Suppliers
                 </p>
 
-                <p className="text-3xl font-semibold text-gray-500 mt-2">
-                  {inactiveSuppliers}
+                <p className="mt-2 text-2xl font-bold tracking-tight text-muted-foreground">
+                  {inactiveSuppliers.toLocaleString("en-PK")}
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Currently inactive
                 </p>
+
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center">
-                <UserX size={21} className="text-gray-500" />
+
+              <div className="rounded-xl bg-muted p-2.5 text-muted-foreground">
+
+                <UserX className="h-5 w-5" />
+
               </div>
+
             </div>
-          </div>
 
-        </div>
+          </CardContent>
 
-        {/* Search and filters */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <div className="flex flex-col md:flex-row gap-3">
+        </Card>
+
+      </div>
+
+
+      {/* =================================================
+          SEARCH + FILTER
+      ================================================= */}
+
+      <Card className="border-0 shadow-sm">
+
+        <CardContent className="p-4">
+
+          <div className="flex flex-col gap-3 md:flex-row">
+
+
+            {/* SEARCH */}
 
             <div className="relative flex-1">
+
               <Search
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                className="
+                  absolute
+                  left-3
+                  top-1/2
+                  h-4
+                  w-4
+                  -translate-y-1/2
+                  text-muted-foreground
+                "
               />
 
               <input
                 type="text"
-                placeholder="Search by name, phone, email or address..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition"
+                onChange={(e) =>
+                  handleSearch(e.target.value)
+                }
+                placeholder="Search by name, phone, email or address..."
+                className="
+                  h-10
+                  w-full
+                  rounded-lg
+                  border
+                  border-input
+                  bg-background
+                  pl-9
+                  pr-3
+                  text-sm
+                  outline-none
+                  transition
+                  placeholder:text-muted-foreground
+                  focus:border-emerald-500
+                  focus:ring-2
+                  focus:ring-emerald-500/20
+                "
               />
+
             </div>
+
+
+            {/* STATUS */}
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-100 md:w-48"
+              onChange={(e) =>
+                handleStatusChange(
+                  e.target.value
+                )
+              }
+              className="
+                h-10
+                w-full
+                rounded-lg
+                border
+                border-input
+                bg-background
+                px-3
+                text-sm
+                outline-none
+                transition
+                focus:border-emerald-500
+                focus:ring-2
+                focus:ring-emerald-500/20
+                md:w-44
+              "
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+
+              <option value="all">
+                All Status
+              </option>
+
+              <option value="active">
+                Active
+              </option>
+
+              <option value="inactive">
+                Inactive
+              </option>
+
             </select>
 
+
+            {/* CLEAR */}
+
             {hasFilters && (
-              <button
-                type="button"
+
+              <Button
+                variant="outline"
                 onClick={clearFilters}
-                className="inline-flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition"
+                className="
+                  h-10
+                  w-full
+                  gap-2
+                  sm:w-auto
+                "
               >
-                <X size={16} />
+
+                <X className="h-4 w-4" />
+
                 Clear
-              </button>
+
+              </Button>
+
             )}
+
           </div>
 
-          <div className="mt-3">
-            <p className="text-xs text-gray-500">
+
+          {/* RESULT INFO */}
+
+          <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+
+            <p className="text-xs text-muted-foreground">
+
               Showing{" "}
-              <span className="font-semibold text-gray-700">
-                {filteredSuppliers.length}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-gray-700">
-                {suppliers.length}
-              </span>{" "}
-              suppliers
-            </p>
-          </div>
-        </div>
 
-        {/* Table */}
-        <SupplierTable
-          suppliers={filteredSuppliers}
-          hasFilters={hasFilters}
-          onEdit={handleEdit}
-          onClearFilters={clearFilters}
+              <span className="font-medium text-foreground">
+
+                {filteredSuppliers.length === 0
+                  ? 0
+                  : (currentpage - 1) *
+                      SUPPLIERS_PER_PAGE +
+                    1}
+
+              </span>
+
+              {" "}–{" "}
+
+              <span className="font-medium text-foreground">
+
+                {Math.min(
+                  currentpage *
+                    SUPPLIERS_PER_PAGE,
+                  filteredSuppliers.length
+                )}
+
+              </span>
+
+              {" "}of{" "}
+
+              <span className="font-medium text-foreground">
+
+                {filteredSuppliers.length}
+
+              </span>
+
+              {" "}suppliers
+
+            </p>
+
+
+            {hasFilters && (
+
+              <p className="text-xs text-muted-foreground">
+                Filtered results
+              </p>
+
+            )}
+
+          </div>
+
+        </CardContent>
+
+      </Card>
+
+
+      {/* =================================================
+          SUPPLIER TABLE
+      ================================================= */}
+
+      <SupplierTable
+        suppliers={currentSuppliers}
+        hasFilters={hasFilters}
+        onEdit={handleEdit}
+        onClearFilters={clearFilters}
+      />
+
+
+      {/* =================================================
+          PAGINATION
+      ================================================= */}
+
+      <Pagination
+        currentpage={currentpage}
+        totalPages={totalPages}
+        nextPage={nextPage}
+        prevPage={prevPage}
+        gotoPage={gotoPage}
+      />
+
+
+      {/* =================================================
+          SUPPLIER FORM
+      ================================================= */}
+
+      {showForm && (
+
+        <SupplierForm
+          supplier={editingSupplier}
+          onClose={closeForm}
         />
 
-        {/* Form */}
-        {showForm && (
-          <SupplierForm
-            supplier={editingSupplier}
-            onClose={closeForm}
-          />
-        )}
+      )}
 
-      </div>
     </div>
+
   );
+
 };
+
 
 export default Suppliers;

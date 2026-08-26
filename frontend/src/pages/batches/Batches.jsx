@@ -1,26 +1,48 @@
-import { useState } from "react";
-import {
-  useGetProductBatchesQuery,
-  useDeleteProductBatchMutation,
-} from "../../services/productBatchApi";
-import BatchForm from "./BatchForm";
-import BatchTable from "./BatchTable";
+import { useMemo, useState, useEffect } from "react";
+
 import {
   Boxes,
   CheckCircle2,
   Clock3,
   AlertTriangle,
   Plus,
+  RefreshCcw,
 } from "lucide-react";
+
+import {
+  useGetProductBatchesQuery,
+  useDeleteProductBatchMutation,
+} from "../../services/productBatchApi";
+
+import BatchForm from "./BatchForm";
+import BatchTable from "./BatchTable";
+
 import Loader from "../loader/Loader";
 import ErrorState from "../loader/ErrorState";
 
+import usePagination from "../../components/customHooks/usePagination";
+import Pagination from "../../components/customHooks/Pagination";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+
+const BATCHES_PER_PAGE = 7;
+
+
 const Batches = () => {
+
+  // =====================================================
+  // DATA
+  // =====================================================
+
   const {
     data,
     isLoading,
     isError,
     error,
+    refetch,
+    isFetching,
   } = useGetProductBatchesQuery();
 
   const [
@@ -28,8 +50,10 @@ const Batches = () => {
     { isLoading: isDeleting },
   ] = useDeleteProductBatchMutation();
 
-  const [deletingBatchId, setDeletingBatchId] =
-  useState(null);
+
+  // =====================================================
+  // STATE
+  // =====================================================
 
   const [showForm, setShowForm] = useState(false);
   const [editingBatch, setEditingBatch] = useState(null);
@@ -37,10 +61,23 @@ const Batches = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const [deletingBatchId, setDeletingBatchId] =
+    useState(null);
+
+
+  // =====================================================
+  // DATA
+  // =====================================================
+
   const batches = data?.batches || [];
 
-  // Get batch status
+
+  // =====================================================
+  // BATCH STATUS
+  // =====================================================
+
   const getBatchStatus = (batch) => {
+
     if (!batch.expiryDate) {
       return "ok";
     }
@@ -56,7 +93,10 @@ const Batches = () => {
     }
 
     const thirtyDaysFromNow = new Date(today);
-    thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+    thirtyDaysFromNow.setDate(
+      today.getDate() + 30
+    );
 
     if (expiry <= thirtyDaysFromNow) {
       return "expiring";
@@ -65,271 +105,575 @@ const Batches = () => {
     return "ok";
   };
 
-  // Status counts
-  const okCount = batches.filter(
-    (batch) => getBatchStatus(batch) === "ok"
-  ).length;
 
-  const expiringCount = batches.filter(
-    (batch) => getBatchStatus(batch) === "expiring"
-  ).length;
+  // =====================================================
+  // SUMMARY
+  // =====================================================
 
-  const expiredCount = batches.filter(
-    (batch) => getBatchStatus(batch) === "expired"
-  ).length;
+  const {
+    totalBatches,
+    okCount,
+    expiringCount,
+    expiredCount,
+  } = useMemo(() => {
 
-  // Filter batches
-  const filteredBatches = batches.filter((batch) => {
-    const searchText = search.toLowerCase().trim();
+    let ok = 0;
+    let expiring = 0;
+    let expired = 0;
 
-    const matchesSearch =
-      !searchText ||
-      batch.productName
-        ?.toLowerCase()
-        .includes(searchText) ||
-      batch.sku
-        ?.toLowerCase()
-        .includes(searchText) ||
-      batch.batchNumber
-        ?.toLowerCase()
-        .includes(searchText);
+    batches.forEach((batch) => {
 
-    const status = getBatchStatus(batch);
+      const status = getBatchStatus(batch);
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      status === statusFilter;
+      if (status === "ok") {
+        ok++;
+      }
 
-    return matchesSearch && matchesStatus;
-  });
+      if (status === "expiring") {
+        expiring++;
+      }
 
-  // Add batch
+      if (status === "expired") {
+        expired++;
+      }
+
+    });
+
+    return {
+      totalBatches: batches.length,
+      okCount: ok,
+      expiringCount: expiring,
+      expiredCount: expired,
+    };
+
+  }, [batches]);
+
+
+  // =====================================================
+  // FILTER
+  // =====================================================
+
+  const filteredBatches = useMemo(() => {
+
+    const searchText = search
+      .toLowerCase()
+      .trim();
+
+    return batches.filter((batch) => {
+
+      const matchesSearch =
+        !searchText ||
+        batch.productName
+          ?.toLowerCase()
+          .includes(searchText) ||
+        batch.sku
+          ?.toLowerCase()
+          .includes(searchText) ||
+        batch.batchNumber
+          ?.toLowerCase()
+          .includes(searchText);
+
+      const status = getBatchStatus(batch);
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        status === statusFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+
+    });
+
+  }, [batches, search, statusFilter]);
+
+
+  // =====================================================
+  // PAGINATION
+  // =====================================================
+
+  const {
+    currentpage,
+    totalPages,
+    currentData: currentBatches,
+    nextPage,
+    prevPage,
+    gotoPage,
+  } = usePagination(
+    filteredBatches,
+    BATCHES_PER_PAGE
+  );
+
+
+  // =====================================================
+  // RESET PAGE WHEN FILTER CHANGES
+  // =====================================================
+
+  useEffect(() => {
+
+    gotoPage(1);
+
+  }, [search, statusFilter]);
+
+
+  // =====================================================
+  // HANDLERS
+  // =====================================================
+
   const handleAdd = () => {
+
     setEditingBatch(null);
     setShowForm(true);
+
   };
 
-  // Edit batch
+
   const handleEdit = (batch) => {
+
     setEditingBatch(batch);
     setShowForm(true);
+
   };
 
- // Delete batch
-const handleDelete = async (id) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this batch?"
-  );
 
-  if (!confirmed) return;
+  const handleDelete = async (id) => {
 
-  try {
-    setDeletingBatchId(id);
-
-    await deleteProductBatch(id).unwrap();
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error?.data?.message ||
-        "Failed to delete batch"
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this batch?"
     );
-  } finally {
-    setDeletingBatchId(null);
-  }
-};
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <Loader text="Loading batches..." />
-    );
-  }
+    if (!confirmed) {
+      return;
+    }
 
-  // Error state
-  if (isError) {
-    return (
-    <ErrorState
-      title="Failed to load batches"
-      message={
+    try {
+
+      setDeletingBatchId(id);
+
+      await deleteProductBatch(id).unwrap();
+
+    } catch (error) {
+
+      console.error(
+        "Failed to delete batch:",
+        error
+      );
+
+      alert(
         error?.data?.message ||
-        "Something went wrong while fetching batches."
-      }
-    />
-  );
+        "Failed to delete batch"
+      );
+
+    } finally {
+
+      setDeletingBatchId(null);
+
+    }
+
+  };
+
+
+  const closeForm = () => {
+
+    setShowForm(false);
+    setEditingBatch(null);
+
+  };
+
+
+  // =====================================================
+  // LOADING
+  // =====================================================
+
+  if (isLoading) {
+
+    return (
+      <Loader text="Loading Batches..." />
+    );
+
   }
+
+
+  // =====================================================
+  // ERROR
+  // =====================================================
+
+  if (isError) {
+
+    return (
+      <ErrorState
+        title="Failed to load batches"
+        message={
+          error?.data?.message ||
+          "Something went wrong while fetching batches."
+        }
+      />
+    );
+
+  }
+
+
+  // =====================================================
+  // UI
+  // =====================================================
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
-      <div className="max-w-8xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7">
+
+    <div className="space-y-6 p-4 md:p-6">
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-              <Boxes
-                size={23}
-                className="text-blue-600"
-              />
+
+            <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
+
+              <Boxes className="h-6 w-6" />
+
             </div>
 
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
                 Product Batches
               </h1>
 
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-muted-foreground">
                 Manage stock batches and expiry dates
               </p>
+
             </div>
+
           </div>
 
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="inline-flex items-center justify-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition shadow-sm"
+        </div>
+
+
+        <div className="flex items-center gap-2">
+
+          {/* REFRESH */}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refetch}
+            disabled={isFetching}
+            title="Refresh"
+            className="
+              h-9
+              w-9
+              hover:border-emerald-400
+              hover:text-emerald-600
+              hover:bg-emerald-50
+            "
           >
-            <Plus size={18} />
-            Add Batch
-          </button>
+
+            <RefreshCcw
+              className={`h-4 w-4 ${
+                isFetching
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
+
+          </Button>
+
+
+          {/* ADD */}
+
+          <Button
+            onClick={handleAdd}
+            className="gap-2"
+          >
+
+            <Plus className="h-4 w-4" />
+
+            <span>
+              Add Batch
+            </span>
+
+          </Button>
+
         </div>
 
-        {/* Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-sm transition">
+      </div>
+
+
+      {/* =================================================
+          SUMMARY
+      ================================================= */}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+
+        {/* TOTAL */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-                <Boxes
-                  size={22}
-                  className="text-blue-600"
-                />
+
+              <div>
+
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Batches
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight">
+                  {totalBatches.toLocaleString("en-PK")}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  All product batches
+                </p>
+
               </div>
 
-              <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
-                All
-              </span>
-            </div>
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
 
-            <p className="text-sm text-gray-500 mt-5">
-              Total Batches
-            </p>
+                <Boxes className="h-5 w-5" />
 
-            <p className="text-2xl font-semibold text-gray-900 mt-1">
-              {batches.length}
-            </p>
-
-            <p className="text-xs text-gray-400 mt-1">
-              All product batches
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-sm transition">
-            <div className="flex items-start justify-between">
-              <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
-                <CheckCircle2
-                  size={22}
-                  className="text-green-600"
-                />
               </div>
 
-              <span className="text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
-                Healthy
-              </span>
             </div>
 
-            <p className="text-sm text-gray-500 mt-5">
-              Good Batches
-            </p>
+          </CardContent>
 
-            <p className="text-2xl font-semibold text-green-600 mt-1">
-              {okCount}
-            </p>
+        </Card>
 
-            <p className="text-xs text-gray-400 mt-1">
-              No expiry concern
-            </p>
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-sm transition">
+        {/* GOOD */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
             <div className="flex items-start justify-between">
-              <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
-                <Clock3
-                  size={22}
-                  className="text-orange-600"
-                />
+
+              <div>
+
+                <p className="text-sm font-medium text-muted-foreground">
+                  Good Batches
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-600">
+                  {okCount.toLocaleString("en-PK")}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  No expiry concern
+                </p>
+
               </div>
 
-              <span className="text-xs font-medium text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full">
-                Attention
-              </span>
-            </div>
+              <div className="rounded-xl bg-emerald-100 p-2.5 text-emerald-600">
 
-            <p className="text-sm text-gray-500 mt-5">
-              Expiring Soon
-            </p>
+                <CheckCircle2 className="h-5 w-5" />
 
-            <p className="text-2xl font-semibold text-orange-600 mt-1">
-              {expiringCount}
-            </p>
-
-            <p className="text-xs text-gray-400 mt-1">
-              Within 30 days
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-sm transition">
-            <div className="flex items-start justify-between">
-              <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center">
-                <AlertTriangle
-                  size={22}
-                  className="text-red-600"
-                />
               </div>
 
-              <span className="text-xs font-medium text-red-700 bg-red-50 px-2.5 py-1 rounded-full">
-                Critical
-              </span>
             </div>
 
-            <p className="text-sm text-gray-500 mt-5">
-              Expired
-            </p>
+          </CardContent>
 
-            <p className="text-2xl font-semibold text-red-600 mt-1">
-              {expiredCount}
-            </p>
+        </Card>
 
-            <p className="text-xs text-gray-400 mt-1">
-              Requires attention
-            </p>
+
+        {/* EXPIRING */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
+            <div className="flex items-start justify-between">
+
+              <div>
+
+                <p className="text-sm font-medium text-muted-foreground">
+                  Expiring Soon
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight text-orange-600">
+                  {expiringCount.toLocaleString("en-PK")}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Within 30 days
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-orange-100 p-2.5 text-orange-600">
+
+                <Clock3 className="h-5 w-5" />
+
+              </div>
+
+            </div>
+
+          </CardContent>
+
+        </Card>
+
+
+        {/* EXPIRED */}
+
+        <Card className="border-0 shadow-sm">
+
+          <CardContent className="p-5">
+
+            <div className="flex items-start justify-between">
+
+              <div>
+
+                <p className="text-sm font-medium text-muted-foreground">
+                  Expired
+                </p>
+
+                <p className="mt-2 text-2xl font-bold tracking-tight text-red-600">
+                  {expiredCount.toLocaleString("en-PK")}
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Requires attention
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-red-100 p-2.5 text-red-600">
+
+                <AlertTriangle className="h-5 w-5" />
+
+              </div>
+
+            </div>
+
+          </CardContent>
+
+        </Card>
+
+      </div>
+
+
+      {/* =================================================
+          BATCH TABLE SECTION
+      ================================================= */}
+
+      <Card className="border-0 shadow-sm">
+
+        <CardContent className="p-0">
+
+          {/* SECTION HEADER */}
+
+          <div className="
+            flex
+            flex-col
+            gap-3
+            border-b
+            p-5
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+          ">
+
+            <div>
+
+              <h2 className="text-lg font-semibold">
+                Batch Inventory
+              </h2>
+
+              <p className="text-sm text-muted-foreground">
+                View and manage all product batches
+              </p>
+
+            </div>
+
+
+            <Button
+              variant="outline"
+              onClick={handleAdd}
+              className="
+                w-full
+                gap-2
+                sm:w-auto
+                hover:border-emerald-400
+                hover:text-emerald-600
+                hover:bg-emerald-50
+              "
+            >
+
+              <Plus className="h-4 w-4" />
+
+              New Batch
+
+            </Button>
+
           </div>
-        </div>
 
-        <BatchTable
-          batches={batches}
-          filteredBatches={filteredBatches}
-          search={search}
-          setSearch={setSearch}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          getBatchStatus={getBatchStatus}
-          handleEdit={handleEdit}
-          handleDelete={handleDelete}
-          isDeleting={isDeleting}
-           deletingBatchId={deletingBatchId}
+
+          {/* TABLE */}
+
+         <BatchTable
+  batches={batches}
+  filteredBatches={currentBatches}
+  search={search}
+  setSearch={setSearch}
+  statusFilter={statusFilter}
+  setStatusFilter={setStatusFilter}
+  getBatchStatus={getBatchStatus}
+  handleEdit={handleEdit}
+  handleDelete={handleDelete}
+  isDeleting={isDeleting}
+  deletingBatchId={deletingBatchId}
+/>
+
+        </CardContent>
+
+      </Card>
+
+
+      {/* =================================================
+          PAGINATION
+      ================================================= */}
+
+      {totalPages > 1 && (
+
+        <Pagination
+          currentpage={currentpage}
+          totalPages={totalPages}
+          nextPage={nextPage}
+          prevPage={prevPage}
+          gotoPage={gotoPage}
         />
 
-        {showForm && (
-          <BatchForm
-            batch={editingBatch}
-            onClose={() => {
-              setShowForm(false);
-              setEditingBatch(null);
-            }}
-          />
-        )}
-      </div>
+      )}
+
+
+      {/* =================================================
+          FORM
+      ================================================= */}
+
+      {showForm && (
+
+        <BatchForm
+          batch={editingBatch}
+          onClose={closeForm}
+        />
+
+      )}
+
     </div>
+
   );
+
 };
+
 
 export default Batches;

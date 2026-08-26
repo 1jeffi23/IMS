@@ -6,7 +6,7 @@ import Login from "./components/auth/Login";
 import Forgetpass from "./components/auth/Forgetpass";
 import Resetpass from "./components/auth/Resetpass";
 
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./components/layout/Dashboard";
 import Products from "./pages/products/Products";
 import Batches from "./pages/batches/Batches";
 import Suppliers from "./pages/suppliers/Suppliers";
@@ -21,6 +21,9 @@ import AdminLayout from "./components/layout/AdminLayout";
 import ProtectedRoute from "./contexts/ProtectedRoute";
 import UserHistory from "./pages/users/UserHistory";
 import Users from "./pages/users/Users";
+import Expenses from "./pages/expenses/Expenses";
+import Accounting from "./pages/accounting/Accounting";
+import Chat from "./pages/chat/Chat";
 
 function App() {
   return (
@@ -134,6 +137,11 @@ function App() {
               element={<Sale />}
             />
 
+            <Route
+              path="/chat"
+              element={<Chat />}
+            />
+
 
             {/* Purchases */}
 
@@ -168,6 +176,28 @@ function App() {
               }
             />
 
+            <Route
+              path="/expenses"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["admin", "manager"]}
+                >
+                  <Expenses />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/accounting"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["admin", "manager"]}
+                >
+                  <Accounting />
+                </ProtectedRoute>
+              }
+            />
+
 
             {/* Audit Logs */}
 
@@ -183,6 +213,8 @@ function App() {
             />
 
           </Route>
+
+
 
 
           {/* ================= FALLBACK ================= */}

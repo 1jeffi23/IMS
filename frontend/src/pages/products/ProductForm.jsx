@@ -34,7 +34,10 @@ const ProductForm = ({ product, onClose }) => {
   const [updateProduct, { isLoading: isUpdating }] =
     useUpdateProductMutation();
 
-  // Fill form while editing
+  // =====================================================
+  // FILL FORM WHILE EDITING
+  // =====================================================
+
   useEffect(() => {
     if (product) {
       setFormData({
@@ -61,7 +64,10 @@ const ProductForm = ({ product, onClose }) => {
     }
   }, [product]);
 
-  // Handle change
+  // =====================================================
+  // HANDLE CHANGE
+  // =====================================================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -74,7 +80,10 @@ const ProductForm = ({ product, onClose }) => {
     }));
   };
 
-  // Submit
+  // =====================================================
+  // SUBMIT
+  // =====================================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -92,7 +101,6 @@ const ProductForm = ({ product, onClose }) => {
             ? null
             : Number(formData.storageTime),
 
-        // IMPORTANT
         isActive: formData.isActive,
       };
 
@@ -118,247 +126,287 @@ const ProductForm = ({ product, onClose }) => {
     }
   };
 
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting =
+    isCreating || isUpdating;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
 
-      <div className="bg-white rounded-lg w-full max-w-lg p-6">
+      {/* MODAL */}
 
-        {/* HEADER */}
+      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
 
-        <div className="flex justify-between mb-6">
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
-          <h2 className="text-xl font-semibold">
-            {isEditing
-              ? "Edit Product"
-              : "Add Product"}
-          </h2>
+        <div className="flex shrink-0 items-center justify-between border-b px-6 py-4">
+
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isEditing
+                ? "Edit Product"
+                : "Add Product"}
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              {isEditing
+                ? "Update product information"
+                : "Add a new product to your inventory"}
+            </p>
+          </div>
 
           <button
             type="button"
             onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
           >
             ✕
           </button>
 
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        {/* =================================================
+            SCROLLABLE FORM AREA
+        ================================================= */}
 
-          {/* PRODUCT NAME */}
+        <div className="overflow-y-auto">
 
-          <div>
-            <label className="block mb-1">
-              Product Name
-            </label>
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 p-6"
+          >
 
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
-              placeholder="e.g. Coca Cola 500ml"
-            />
-          </div>
+            {/* PRODUCT NAME */}
 
-          {/* SKU */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Product Name
+              </label>
 
-          <div>
-            <label className="block mb-1">
-              SKU
-            </label>
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+                placeholder="e.g. Coca Cola 500ml"
+              />
+            </div>
 
-            <input
-              name="sku"
-              value={formData.sku}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
-              placeholder="e.g. COKE-500"
-            />
-          </div>
+            {/* SKU */}
 
-          {/* CATEGORY */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                SKU
+              </label>
 
-          <div>
-            <label className="block mb-1">
-              Category
-            </label>
+              <input
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+                placeholder="e.g. COKE-500"
+              />
+            </div>
 
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              required
-              disabled={categoriesLoading}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">
-                Select category
-              </option>
+            {/* CATEGORY */}
 
-              {categories
-                .filter(
-                  (category) => category.isActive
-                )
-                .map((category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
-                    {category.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Category
+              </label>
 
-          {/* UNIT */}
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleChange}
+                required
+                disabled={categoriesLoading}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+              >
+                <option value="">
+                  {categoriesLoading
+                    ? "Loading categories..."
+                    : "Select category"}
+                </option>
 
-          <div>
-            <label className="block mb-1">
-              Unit
-            </label>
+                {categories
+                  .filter(
+                    (category) =>
+                      category.isActive
+                  )
+                  .map((category) => (
+                    <option
+                      key={category.id}
+                      value={category.id}
+                    >
+                      {category.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
 
-            <select
-              name="unit"
-              value={formData.unit}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="piece">
-                Piece
-              </option>
+            {/* UNIT */}
 
-              <option value="pack">
-                Pack
-              </option>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Unit
+              </label>
 
-              <option value="bottle">
-                Bottle
-              </option>
+              <select
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+              >
+                <option value="piece">
+                  Piece
+                </option>
 
-              <option value="box">
-                Box
-              </option>
+                <option value="kg">
+                  Kilogram (kg)
+                </option>
 
-              <option value="kg">
-                Kg
-              </option>
+                <option value="g">
+                  Gram (g)
+                </option>
 
-              <option value="liter">
-                Liter
-              </option>
-            </select>
-          </div>
+                <option value="liter">
+                  Liter (L)
+                </option>
 
-          {/* SELLING PRICE */}
+                <option value="ml">
+                  Milliliter (ml)
+                </option>
 
-          <div>
-            <label className="block mb-1">
-              Selling Price
-            </label>
+                <option value="pack">
+                  Pack
+                </option>
 
-            <input
-              type="number"
-              name="sellingPrice"
-              value={formData.sellingPrice}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              required
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+                <option value="box">
+                  Box
+                </option>
 
-          {/* REORDER LEVEL */}
+                <option value="dozen">
+                  Dozen
+                </option>
+              </select>
+            </div>
 
-          <div>
-            <label className="block mb-1">
-              Reorder Level
-            </label>
+            {/* SELLING PRICE */}
 
-            <input
-              type="number"
-              name="reorderLevel"
-              value={formData.reorderLevel}
-              onChange={handleChange}
-              min="0"
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Selling Price
+              </label>
 
-          {/* STORAGE TIME */}
+              <input
+                type="number"
+                name="sellingPrice"
+                value={formData.sellingPrice}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                required
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+                placeholder="0"
+              />
+            </div>
 
-          <div>
-            <label className="block mb-1">
-              Storage Time (days)
-            </label>
+            {/* REORDER LEVEL */}
 
-            <input
-              type="number"
-              name="storageTime"
-              value={formData.storageTime}
-              onChange={handleChange}
-              min="0"
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Reorder Level
+              </label>
 
-          {/* STATUS */}
+              <input
+                type="number"
+                name="reorderLevel"
+                value={formData.reorderLevel}
+                onChange={handleChange}
+                min="0"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+                placeholder="10"
+              />
+            </div>
 
-          <div>
-            <label className="block mb-1">
-              Status
-            </label>
+            {/* STORAGE TIME */}
 
-            <select
-              name="isActive"
-              value={formData.isActive ? "true" : "false"}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="true">
-                Active
-              </option>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Storage Time (days)
+              </label>
 
-              <option value="false">
-                Inactive
-              </option>
-            </select>
-          </div>
+              <input
+                type="number"
+                name="storageTime"
+                value={formData.storageTime}
+                onChange={handleChange}
+                min="0"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+                placeholder="e.g. 30"
+              />
+            </div>
 
-          {/* BUTTONS */}
+            {/* STATUS */}
 
-          <div className="flex justify-end gap-3 pt-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Status
+              </label>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="border px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
+              <select
+                name="isActive"
+                value={
+                  formData.isActive
+                    ? "true"
+                    : "false"
+                }
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-100"
+              >
+                <option value="true">
+                  Active
+                </option>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-black text-white px-4 py-2 rounded"
-            >
-              {isSubmitting
-                ? "Saving..."
-                : isEditing
-                ? "Update Product"
-                : "Add Product"}
-            </button>
+                <option value="false">
+                  Inactive
+                </option>
+              </select>
+            </div>
 
-          </div>
+            {/* BUTTONS */}
 
-        </form>
+            <div className="flex justify-end gap-3 border-t pt-5">
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting
+                  ? "Saving..."
+                  : isEditing
+                    ? "Update Product"
+                    : "Add Product"}
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
 
       </div>
 

@@ -2,25 +2,30 @@ import React, { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import {
-  VscDashboard,
-  VscPackage,
-  VscArchive,
-  VscOrganization,
-  VscGraph,
-  VscMenu,
-  VscSignOut,
-  VscListUnordered,
-  VscAccount,
-  VscCloudDownload,
-} from "react-icons/vsc";
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Tags,
+  Archive,
+  Truck,
+  UsersRound,
+  ShoppingBag,
+  Receipt,
+  Calculator,
+  ClipboardList,
+  UserCog,
+  History,
+  MessageCircle,
+  Menu,
+  LogOut,
+} from "lucide-react";
 
-import { AuthContext } from "../contexts/authContext";
+import { AuthContext } from "../../contexts/authContext";
 import ProfilePopup from "./ProfilePopup";
 
 const Sidebar = () => {
   const [open, setOpen] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
-  
 
   const navigate = useNavigate();
 
@@ -30,100 +35,125 @@ const Sidebar = () => {
     isLoading,
   } = useContext(AuthContext);
 
-
+  // =====================================================
   // MENU ITEMS
-  const menuItems = [
+  // =====================================================
 
+  const menuItems = [
     {
-      icon: <VscDashboard size={21} />,
+      icon: <LayoutDashboard size={20} />,
       label: "Dashboard",
       path: "/dashboard",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscGraph size={21} />,
+      icon: <ShoppingCart size={20} />,
       label: "POS",
       path: "/pos",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscPackage size={21} />,
+      icon: <Package size={20} />,
       label: "Products",
       path: "/products",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscListUnordered size={21} />,
+      icon: <Tags size={20} />,
       label: "Categories",
       path: "/categories",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscArchive size={21} />,
+      icon: <Archive size={20} />,
       label: "Batches",
       path: "/batches",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscOrganization size={21} />,
+      icon: <Truck size={20} />,
       label: "Suppliers",
       path: "/suppliers",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscAccount size={21} />,
+      icon: <UsersRound size={20} />,
       label: "Customers",
       path: "/customers",
       roles: ["admin", "manager", "cashier"],
     },
 
     {
-      icon: <VscCloudDownload size={21} />,
+      icon: <ShoppingBag size={20} />,
       label: "Purchases",
       path: "/purchases",
       roles: ["admin", "manager"],
     },
 
     {
-      icon: <VscGraph size={21} />,
+      icon: <Receipt size={20} />,
+      label: "Expenses",
+      path: "/expenses",
+      roles: ["admin", "manager"],
+    },
+
+    {
+      icon: <Calculator size={20} />,
+      label: "Accounting",
+      path: "/accounting",
+      roles: ["admin", "manager"],
+    },
+
+    {
+      icon: <ClipboardList size={20} />,
       label: "Sales",
       path: "/sales",
       roles: ["admin", "manager", "cashier"],
     },
 
-
+    // ===================================================
     // ADMIN ONLY
+    // ===================================================
+
     {
-      icon: <VscAccount size={21} />,
+      icon: <UserCog size={20} />,
       label: "Users",
       path: "/users",
       roles: ["admin"],
     },
 
     {
-      icon: <VscListUnordered size={21} />,
+      icon: <History size={20} />,
       label: "Audit Logs",
       path: "/audit-logs",
       roles: ["admin"],
     },
 
+    {
+      icon: <MessageCircle size={20} />,
+      label: "Chat",
+      path: "/chat",
+      roles: ["admin", "manager", "cashier"],
+    },
   ];
 
-
-
+  // =====================================================
   // FILTER MENU BY ROLE
-  const visibleMenuItems = menuItems.filter((item) => {
-    return item.roles.includes(user?.role);
-  });
+  // =====================================================
 
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles.includes(user?.role)
+  );
 
+  // =====================================================
   // LOGOUT
+  // =====================================================
 
   const handleLogout = async () => {
     try {
@@ -134,14 +164,12 @@ const Sidebar = () => {
     }
   };
 
-
-  //====
+  // =====================================================
   // USER INITIAL
-  //====
+  // =====================================================
 
   const userInitial =
     user?.name?.charAt(0)?.toUpperCase() || "U";
-
 
   return (
     <>
@@ -149,9 +177,8 @@ const Sidebar = () => {
         className={`
           sticky top-0
           flex h-screen
-          flex-col
-          justify-between
           shrink-0
+          flex-col
           border-r border-gray-200
           bg-white
           text-gray-800
@@ -159,18 +186,19 @@ const Sidebar = () => {
           ${open ? "w-64" : "w-20"}
         `}
       >
-
-        {/*
+        {/* =================================================
             TOP SECTION
-       = */}
+        ================================================= */}
 
-        <div>
+        <div className="flex min-h-0 flex-1 flex-col">
 
-          {/* HEADER */}
+          {/* =================================================
+              HEADER
+          ================================================= */}
 
           <div
             className={`
-              flex h-20
+              flex h-20 shrink-0
               items-center
               border-b border-gray-100
               ${
@@ -180,13 +208,11 @@ const Sidebar = () => {
               }
             `}
           >
-
             {open && (
               <div>
-
                 <h1 className="text-xl font-bold tracking-tight text-gray-900">
                   Inventory
-                  <span className="text-gray-400">
+                  <span className="text-emerald-600">
                     .
                   </span>
                 </h1>
@@ -194,7 +220,6 @@ const Sidebar = () => {
                 <p className="mt-0.5 text-xs text-gray-400">
                   Management System
                 </p>
-
               </div>
             )}
 
@@ -208,25 +233,36 @@ const Sidebar = () => {
               }
               className="
                 flex h-10 w-10
+                cursor-pointer
                 items-center justify-center
                 rounded-lg
                 text-gray-500
                 transition
                 hover:bg-gray-100
                 hover:text-gray-900
-                cursor-pointer
               "
             >
-              <VscMenu size={23} />
+              <Menu size={22} />
             </button>
-
           </div>
 
+          {/* =================================================
+              SCROLLABLE NAVIGATION
+          ================================================= */}
 
-          {/* NAVIGATION */}
+          <nav
+            className="
+              min-h-0
+              flex-1
+              overflow-y-auto
+              px-3
+              py-6
 
-          <nav className="px-3 pt-6">
-
+              scrollbar-thin
+              scrollbar-thumb-gray-200
+              scrollbar-track-transparent
+            "
+          >
             {open && (
               <p
                 className="
@@ -244,18 +280,15 @@ const Sidebar = () => {
             )}
 
             <ul className="space-y-1.5">
-
               {visibleMenuItems.map((item) => (
-
                 <li key={item.path}>
-
                   <NavLink
                     to={item.path}
                     className={({ isActive }) => `
                       group relative
-                      flex items-center
-                      h-11
-                      rounded-lg
+                      flex h-11
+                      items-center
+                      rounded-xl
                       transition-all duration-200
 
                       ${
@@ -267,25 +300,24 @@ const Sidebar = () => {
                       ${
                         isActive
                           ? `
-                              bg-gray-900
+                              bg-emerald-600
                               text-white
                               shadow-sm
+                              shadow-emerald-200
                             `
                           : `
                               text-gray-600
-                              hover:bg-gray-100
-                              hover:text-gray-900
+                              hover:bg-emerald-50
+                              hover:text-emerald-600
                             `
                       }
                     `}
                   >
-
                     {/* ICON */}
 
                     <span className="shrink-0">
                       {item.icon}
                     </span>
-
 
                     {/* LABEL */}
 
@@ -306,7 +338,6 @@ const Sidebar = () => {
                       {item.label}
                     </span>
 
-
                     {/* TOOLTIP */}
 
                     {!open && (
@@ -317,9 +348,10 @@ const Sidebar = () => {
                           left-16
                           z-50
                           whitespace-nowrap
-                          rounded-md
+                          rounded-lg
                           bg-gray-900
-                          px-3 py-2
+                          px-3
+                          py-2
                           text-xs
                           font-medium
                           text-white
@@ -327,33 +359,25 @@ const Sidebar = () => {
                           translate-x-1
                           shadow-lg
                           transition-all duration-200
-                          group-hover:opacity-100
                           group-hover:translate-x-0
+                          group-hover:opacity-100
                         "
                       >
                         {item.label}
                       </span>
                     )}
-
                   </NavLink>
-
                 </li>
-
               ))}
-
             </ul>
-
           </nav>
-
         </div>
 
+        {/* =================================================
+            BOTTOM USER SECTION
+        ================================================= */}
 
-        {/*
-            BOTTOM SECTION
-       = */}
-
-        <div className="border-t border-gray-200 p-3">
-
+        <div className="shrink-0 border-t border-gray-200 bg-white p-3">
           <div
             className={`
               flex items-center
@@ -364,39 +388,38 @@ const Sidebar = () => {
               }
             `}
           >
-
-            {/* USER / PROFILE */}
+            {/* PROFILE */}
 
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
               className={`
-                flex items-center
+                flex
+                cursor-pointer
+                items-center
                 gap-3
-                rounded-lg
+                rounded-xl
                 p-2
                 text-left
-                cursor-pointer
                 transition
                 hover:bg-gray-100
+
                 ${
                   open
-                    ? "flex-1 min-w-0"
+                    ? "min-w-0 flex-1"
                     : ""
                 }
               `}
             >
-
               {/* AVATAR */}
 
               <div
                 className="
                   flex h-9 w-9
                   shrink-0
-                  items-center
-                  justify-center
+                  items-center justify-center
                   rounded-full
-                  bg-gray-900
+                  bg-emerald-600
                   text-sm
                   font-semibold
                   text-white
@@ -405,13 +428,10 @@ const Sidebar = () => {
                 {userInitial}
               </div>
 
-
               {/* USER INFO */}
 
               {open && (
-
                 <div className="min-w-0">
-
                   <p
                     className="
                       truncate
@@ -433,18 +453,13 @@ const Sidebar = () => {
                   >
                     {user?.email || ""}
                   </p>
-
                 </div>
-
               )}
-
             </button>
-
 
             {/* LOGOUT */}
 
             {open && (
-
               <button
                 type="button"
                 onClick={handleLogout}
@@ -454,32 +469,27 @@ const Sidebar = () => {
                   ml-2
                   flex h-9 w-9
                   shrink-0
-                  items-center
-                  justify-center
+                  cursor-pointer
+                  items-center justify-center
                   rounded-lg
                   text-gray-400
                   transition
                   hover:bg-red-50
                   hover:text-red-600
+                  disabled:cursor-not-allowed
                   disabled:opacity-50
-                  cursor-pointer
                 "
               >
-                <VscSignOut size={21} />
+                <LogOut size={20} />
               </button>
-
             )}
-
           </div>
-
         </div>
-
       </aside>
 
-
-      {/*====
+      {/* =================================================
           PROFILE POPUP
-     ==== */}
+      ================================================= */}
 
       {profileOpen && (
         <ProfilePopup
@@ -487,7 +497,6 @@ const Sidebar = () => {
           onClose={() => setProfileOpen(false)}
         />
       )}
-
     </>
   );
 };

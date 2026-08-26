@@ -10,6 +10,9 @@ import { saleApi } from './services/saleApi'
 import { customerApi } from './services/customerApi'
 import { auditLogApi } from './services/auditLogApi'
 import { userApi } from './services/userApi'
+import { expenseApi } from './services/expenseApi'
+import { accountingApi } from './services/accountingApi'
+import { chatApi } from './services/chatApi'
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +25,9 @@ export const store = configureStore({
     [customerApi.reducerPath]: customerApi.reducer,
     [auditLogApi.reducerPath]: auditLogApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [expenseApi.reducerPath]: expenseApi.reducer,
+    [accountingApi.reducerPath]: accountingApi.reducer,
+    [chatApi.reducerPath]: chatApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -34,7 +40,10 @@ export const store = configureStore({
       .concat(saleApi.middleware)
       .concat(customerApi.middleware)
       .concat(auditLogApi.middleware)
-      .concat(userApi.middleware),
+      .concat(userApi.middleware)
+      .concat(expenseApi.middleware)
+      .concat(accountingApi.middleware)
+      .concat(chatApi.middleware),
 })
 
 setupListeners(store.dispatch)

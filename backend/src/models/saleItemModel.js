@@ -43,6 +43,11 @@ export const saleItem = pgTable(
       scale: 2,
     }).notNull(),
 
+    // Actual purchase cost per unit
+    costPrice: numeric("cost_price", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
 
     totalPrice: numeric("total_price", {
       precision: 12,

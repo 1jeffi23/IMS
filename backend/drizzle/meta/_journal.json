@@ -113,6 +113,34 @@
       "when": 1787309123649,
       "tag": "0015_cuddly_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1787395809064,
+      "tag": "0016_familiar_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1787396010299,
+      "tag": "0017_hot_bushwacker",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1787655985725,
+      "tag": "0018_curved_shard",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1787731640345,
+      "tag": "0019_minor_inertia",
+      "breakpoints": true
     }
   ]
 }

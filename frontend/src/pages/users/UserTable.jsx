@@ -15,12 +15,12 @@ const UserTable = ({
   onViewHistory,
 }) => {
 
-  
+  // =====================================================
   // ROLE STYLE
-  
+  // =====================================================
 
   const getRoleStyle = (role) => {
-    switch (role) {
+    switch (role?.toLowerCase()) {
       case "admin":
         return "bg-purple-100 text-purple-700 border-purple-200";
 
@@ -35,12 +35,19 @@ const UserTable = ({
     }
   };
 
-  
+  // =====================================================
   // TABLE
-  
+  // =====================================================
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="
+      overflow-hidden
+      rounded-2xl
+      border
+      border-gray-200
+      bg-white
+      shadow-sm
+    ">
 
       <div className="overflow-x-auto">
 
@@ -48,27 +55,72 @@ const UserTable = ({
 
           {/* TABLE HEADER */}
 
-          <thead className="border-b border-gray-200 bg-gray-50">
+          <thead className="
+            border-b
+            border-gray-200
+            bg-gray-50
+          ">
 
             <tr>
 
-              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <th className="
+                px-5
+                py-4
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
                 User
               </th>
 
-              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <th className="
+                px-5
+                py-4
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
                 Email
               </th>
 
-              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <th className="
+                px-5
+                py-4
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
                 Role
               </th>
 
-              <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <th className="
+                px-5
+                py-4
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
                 Created
               </th>
 
-              <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <th className="
+                px-5
+                py-4
+                text-right
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
                 Actions
               </th>
 
@@ -89,15 +141,34 @@ const UserTable = ({
                   className="px-5 py-12 text-center"
                 >
 
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                  <div className="
+                    mx-auto
+                    flex
+                    h-12
+                    w-12
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-gray-100
+                    text-gray-400
+                  ">
                     <VscHistory size={23} />
                   </div>
 
-                  <p className="mt-3 text-sm font-medium text-gray-700">
+                  <p className="
+                    mt-3
+                    text-sm
+                    font-medium
+                    text-gray-700
+                  ">
                     No users found
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="
+                    mt-1
+                    text-xs
+                    text-gray-400
+                  ">
                     There are no users to display.
                   </p>
 
@@ -123,7 +194,11 @@ const UserTable = ({
 
                   <tr
                     key={user.id}
-                    className="group transition hover:bg-gray-50"
+                    className="
+                      group
+                      transition
+                      hover:bg-gray-50
+                    "
                   >
 
                     {/* USER */}
@@ -132,36 +207,47 @@ const UserTable = ({
 
                       <div className="flex items-center gap-3">
 
-                        <div
-                          className="
-                            flex h-10 w-10
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-linear-to-br
-                            from-gray-800
-                            to-gray-950
-                            text-sm
-                            font-bold
-                            text-white
-                            shadow-sm
-                          "
-                        >
+                        <div className="
+                          flex
+                          h-10
+                          w-10
+                          shrink-0
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-linear-to-br
+                          from-gray-800
+                          to-gray-950
+                          text-sm
+                          font-bold
+                          text-white
+                          shadow-sm
+                        ">
+
                           {user.name
                             ?.charAt(0)
                             ?.toUpperCase() ||
                             "U"}
+
                         </div>
 
                         <div className="min-w-0">
 
-                          <p className="truncate text-sm font-semibold text-gray-900">
+                          <p className="
+                            truncate
+                            text-sm
+                            font-semibold
+                            text-gray-900
+                          ">
                             {user.name ||
                               "Unknown"}
                           </p>
 
-                          <p className="mt-0.5 text-xs text-gray-400">
+                          <p className="
+                            mt-0.5
+                            text-xs
+                            text-gray-400
+                          ">
                             User ID:{" "}
                             {String(user.id).slice(
                               0,
@@ -189,7 +275,12 @@ const UserTable = ({
 
                     <td className="px-5 py-4">
 
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="
+                        flex
+                        flex-wrap
+                        items-center
+                        gap-2
+                      ">
 
                         <select
                           value={selectedRole}
@@ -213,9 +304,9 @@ const UserTable = ({
                             outline-none
                             transition
                             hover:border-gray-400
-                            focus:border-gray-600
+                            focus:border-emerald-500
                             focus:ring-2
-                            focus:ring-gray-200
+                            focus:ring-emerald-100
                             disabled:cursor-not-allowed
                             disabled:bg-gray-100
                           "
@@ -287,7 +378,12 @@ const UserTable = ({
 
                     <td className="px-5 py-4">
 
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="
+                        flex
+                        items-center
+                        justify-end
+                        gap-2
+                      ">
 
                         {/* UPDATE ROLE */}
 
@@ -321,9 +417,7 @@ const UserTable = ({
 
                           {hasChanged &&
                           !isUserUpdating ? (
-                            <VscCheck
-                              size={16}
-                            />
+                            <VscCheck size={16} />
                           ) : null}
 
                           {isUserUpdating
@@ -346,16 +440,16 @@ const UserTable = ({
                             gap-1.5
                             rounded-lg
                             border
-                            border-purple-200
-                            bg-purple-50
+                            border-emerald-200
+                            bg-emerald-50
                             px-3
                             py-2
                             text-sm
                             font-medium
-                            text-purple-700
+                            text-emerald-700
                             transition
-                            hover:border-purple-300
-                            hover:bg-purple-100
+                            hover:border-emerald-300
+                            hover:bg-emerald-100
                           "
                         >
 
