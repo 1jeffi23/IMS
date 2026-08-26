@@ -27,7 +27,7 @@ const Signup = () => {
         email: data.email.trim().toLowerCase(),
         password: data.password,
         callbackURL:
-          "http://localhost:5173/login",
+          "https://ims-five-rho.vercel.app/login",
       });
 
     if (error) {
