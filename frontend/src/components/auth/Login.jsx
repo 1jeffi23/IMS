@@ -37,7 +37,7 @@ const Login = () => {
     reset();
 
     // AuthContext/useSession will automatically get the updated session.
-    navigate("https://ims-five-rho.vercel.app/dashboard", { replace: true });
+    navigate("/dashboard", { replace: true });
   };
 
   // GitHub Login
@@ -45,7 +45,7 @@ const Login = () => {
     try {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: "https://ims-five-rho.vercel.app/dashboard",
+        callbackURL: "/dashboard",
       });
     } catch (error) {
       toast.error("GitHub login failed");
