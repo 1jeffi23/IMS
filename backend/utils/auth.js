@@ -48,7 +48,7 @@ export const auth = betterAuth({
 
 
   trustedOrigins: [
-    "https://ims-five-rho.vercel.app",
+    "https://ims-eta-silk.vercel.app",
   ],
 
 

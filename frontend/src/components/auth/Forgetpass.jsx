@@ -19,7 +19,7 @@ const Forgetpass = () => {
   const { data: response, error } =
     await authClient.requestPasswordReset({
       email: data.email.trim().toLowerCase(),
-      redirectTo: "https://ims-five-rho.vercel.app/reset-password",
+      redirectTo: "https://ims-eta-silk.vercel.app/reset-password",
     });
 
   if (error) {

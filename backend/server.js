@@ -24,7 +24,7 @@ import { setupSocketServer } from './src/socket/socketServer.js';
 
 const app = express();
 app.use(cors({
-    origin: "https://ims-five-rho.vercel.app",
+    origin: "https://ims-eta-silk.vercel.app",
     credentials: true,
   }));
 
@@ -38,7 +38,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://ims-five-rho.vercel.app",
+    origin: "https://ims-eta-silk.vercel.app",
     credentials: true,
   },
 });
