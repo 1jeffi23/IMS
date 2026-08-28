@@ -16,6 +16,7 @@ import {
 import ErrorState from "../loader/ErrorState";
 import Loader from "../loader/Loader";
 import axios from "axios";
+import api from "@/lib/axios";
 
 const SaleTable = () => {
   // STATE
@@ -71,8 +72,8 @@ const SaleTable = () => {
     try {
       setDownloadingSaleId(saleId);
 
-      const response = await axios.get(
-        `http://localhost:3000/api/sales/${saleId}/invoice`,
+      const response = await api.get(
+        `/sales/${saleId}/invoice`,
         {
           responseType: "blob",
            withCredentials: true,

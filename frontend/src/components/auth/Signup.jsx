@@ -27,7 +27,7 @@ const Signup = () => {
         email: data.email.trim().toLowerCase(),
         password: data.password,
         callbackURL:
-          "https://ims-eta-silk.vercel.app/login",
+          `${import.meta.env.VITE_FRONTEND_URL}/login`,
       });
 
     if (error) {

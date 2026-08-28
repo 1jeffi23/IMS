@@ -7,7 +7,7 @@ export const categoryApi = createApi({
   reducerPath: "categoryApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:3000/api",
+    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api`,
     credentials: "include",
   }),
 

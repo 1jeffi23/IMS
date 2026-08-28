@@ -6,6 +6,7 @@ import {
   Download,
   RefreshCw,
 } from "lucide-react";
+import api from "@/lib/axios";
 
 
 const PurchaseTable = ({
@@ -32,8 +33,8 @@ const PurchaseTable = ({
 
 
       const response =
-        await axios.get(
-          `http://localhost:3000/api/purchases/${purchaseId}/invoice`,
+        await api.get(
+          `/purchases/${purchaseId}/invoice`,
           {
             responseType: "blob",
              withCredentials: true,

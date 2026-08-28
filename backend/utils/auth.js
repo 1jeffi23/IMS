@@ -48,7 +48,7 @@ export const auth = betterAuth({
 
 
   trustedOrigins: [
-    "https://ims-eta-silk.vercel.app",
+    process.env.CLIENT_URL,
   ],
 
 
