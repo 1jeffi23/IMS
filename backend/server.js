@@ -64,3 +64,5 @@ app.use("/api/accounting", accountingRoutes);
 
 
 httpServer.listen(3000,()=> console.log('server running'))
+
+export default app;
