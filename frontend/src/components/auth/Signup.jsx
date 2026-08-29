@@ -27,7 +27,7 @@ const Signup = () => {
         email: data.email.trim().toLowerCase(),
         password: data.password,
         callbackURL:
-          `${import.meta.env.VITE_FRONTEND_URL}/login`,
+          `${import.meta.env.FRONTEND_URL}/login`,
       });
 
     if (error) {

@@ -8,7 +8,7 @@ export const saleApi = createApi({
 
   baseQuery: fetchBaseQuery({
 
-    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api`,
+    baseUrl: `${import.meta.env.BACKEND_URL}/api`,
 
     credentials: "include",
 

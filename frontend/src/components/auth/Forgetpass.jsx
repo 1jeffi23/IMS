@@ -19,7 +19,7 @@ const Forgetpass = () => {
   const { data: response, error } =
     await authClient.requestPasswordReset({
       email: data.email.trim().toLowerCase(),
-      redirectTo: `${import.meta.env.VITE_FRONTEND_URL}/reset-password`,
+      redirectTo: `${import.meta.env.FRONTEND_URL}/reset-password`,
     });
 
   if (error) {

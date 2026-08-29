@@ -4,7 +4,7 @@ export const customerApi = createApi({
   reducerPath: "customerApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api`,
+    baseUrl: `${import.meta.env.BACKEND_URL}/api`,
     credentials: "include",
   }),
 

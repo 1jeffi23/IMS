@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = `${import.meta.env.VITE_BACKEND_URL}/api`;
+const baseUrl = `${import.meta.env.BACKEND_URL}/api`;
 
 export const auditLogApi = createApi({
   reducerPath: "auditLogApi",
