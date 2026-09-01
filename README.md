@@ -108,6 +108,24 @@ Backend  → http://localhost:3000
 ```
 
 > Make sure your environment variables are configured before running the application.
+> ## Role-Based Access Control
+
+| Feature              | Admin | Manager | Cashier |
+|----------------------|:-----:|:-------:|:-------:|
+| Dashboard            |   ✅   |    ✅    |    ✅    |
+| Products & Inventory |   ✅   |    ✅    |    👁️   |
+| Purchases            |   ✅   |    ✅    |    ❌    |
+| Sales / POS          |   ✅   |    ✅    |    ✅    |
+| Customers            |   ✅   |    ✅    |    ✅    |
+| Suppliers            |   ✅   |    ✅    |    ❌    |
+| Expenses             |   ✅   |    ✅    |    ❌    |
+| Accounting           |   ✅   |    ✅    |    ❌    |
+| Audit Logs           |   ✅   |    👁️   |    ❌    |
+| User Management      |   ✅   |    ❌    |    ❌    |
+| Individual Chat      |   ✅   |    ✅    |    ✅    |
+| Group Chat           |   ✅   |    ✅    |    ✅    |
+
+-> ✅ Full Access · 👁️ View Only · ❌ No Access
 
 ## License
 
