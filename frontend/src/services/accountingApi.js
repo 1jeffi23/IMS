@@ -4,7 +4,7 @@ export const accountingApi = createApi({
   reducerPath: "accountingApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "`${import.meta.env.BACKEND_URL}/api`",
+    baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api`,
     credentials: "include",
   }),
 

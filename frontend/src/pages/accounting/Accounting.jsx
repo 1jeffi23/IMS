@@ -196,11 +196,11 @@ const Accounting = () => {
              />
       )}
 
-      {/* Accounting Dashboard */}
-      <AccountingOverview
-        accounting={accounting}
-        isLoading={isLoading}
-      />
+      {!isError && ( 
+        <AccountingOverview
+         accounting={accounting || {}}
+          isLoading={isLoading} /> 
+          )}
 
     </div>
   );
